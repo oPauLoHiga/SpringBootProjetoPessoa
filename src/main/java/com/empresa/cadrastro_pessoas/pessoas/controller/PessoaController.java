@@ -1,6 +1,6 @@
 package com.empresa.cadrastro_pessoas.pessoas.controller;
 
-import com.empresa.cadrastro_pessoas.pessoas.dto.PessoaDTO;
+import com.empresa.cadrastro_pessoas.pessoas.dto.PessoaRequest;
 import com.empresa.cadrastro_pessoas.pessoas.model.Pessoa;
 import com.empresa.cadrastro_pessoas.pessoas.service.PessoaService;
 import jakarta.validation.Valid;
@@ -71,7 +71,7 @@ public class PessoaController {
     // ==============================
     @PostMapping
     public ResponseEntity<String> cadastrar(
-            @Valid @RequestBody PessoaDTO dto) {
+            @Valid @RequestBody PessoaRequest dto) {
         Pessoa pessoaSalva = pessoaService.cadastrar(dto);
         return ResponseEntity.ok(pessoaSalva.getNome() + " cadastrado(a) com sucesso!");
     }
@@ -83,7 +83,7 @@ public class PessoaController {
     @PutMapping("/{id}")
     public ResponseEntity<String> atualizar(
             @PathVariable Long id,
-            @Valid @RequestBody PessoaDTO dto) {
+            @Valid @RequestBody PessoaRequest dto) {
         pessoaService.atualizar(id, dto);
         return modificar(id);
     }

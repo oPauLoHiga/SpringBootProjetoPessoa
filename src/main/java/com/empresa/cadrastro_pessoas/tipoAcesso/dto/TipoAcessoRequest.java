@@ -2,7 +2,11 @@ package com.empresa.cadrastro_pessoas.tipoAcesso.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class TipoAcessoRequest {
 
     @NotBlank(message = "Nome do tipo de acesso é obrigatório")
@@ -12,11 +16,4 @@ public class TipoAcessoRequest {
     @Size(max = 200, message = "Descrição deve ter no máximo 200 caracteres")
     private String descricao;
 
-    public String getNome() { return nome; }
-
-    public void setNome(String nome) { this.nome = nome; }
-
-    public String getDescricao() { return descricao; }
-
-    public void setDescricao(String descricao) { this.descricao = descricao; }
 }

@@ -1,7 +1,9 @@
 package com.empresa.cadrastro_pessoas.tipoAcesso.dto;
 
 import com.empresa.cadrastro_pessoas.tipoAcesso.TipoAcesso;
+import lombok.Getter;
 
+@Getter
 public class TipoAcessoResponse {
 
     private Long    id;
@@ -21,10 +23,4 @@ public class TipoAcessoResponse {
         return r;
     }
 
-    // Getters
-    public Long    getId()          { return id; }
-    public String  getNome()        { return nome; }
-    public String  getDescricao()   { return descricao; }
-    public boolean isAtivo()        { return ativo; }
-    public int     getTotalPessoas(){ return totalPessoas; }
 }

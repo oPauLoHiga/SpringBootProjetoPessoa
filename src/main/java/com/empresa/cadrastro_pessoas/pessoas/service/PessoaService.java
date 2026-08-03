@@ -1,14 +1,16 @@
 package com.empresa.cadrastro_pessoas.pessoas.service;
 
 
-import com.empresa.cadrastro_pessoas.pessoas.dto.PessoaDTO;
+import com.empresa.cadrastro_pessoas.pessoas.dto.PessoaRequest;
 import com.empresa.cadrastro_pessoas.exeption.BusinessException;
 import com.empresa.cadrastro_pessoas.exeption.ResourceNotFoundException;
 import com.empresa.cadrastro_pessoas.pessoas.model.Pessoa;
 import com.empresa.cadrastro_pessoas.pessoas.repository.PessoaRepository;
 import lombok.RequiredArgsConstructor;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
+import com.empresa.cadrastro_pessoas.tipoAcesso.TipoAcesso;
+import com.empresa.cadrastro_pessoas.tipoAcesso.repository.TipoAcessoRepository;
 
 import java.util.List;
 
@@ -17,8 +19,9 @@ import java.util.List;
 public class PessoaService {
 
     private final PessoaRepository pessoaRepository;
+    private final TipoAcessoRepository tipoAcessoRepository;
 
-    @Transactional()
+    @Transactional(readOnly = true)
     public List<Pessoa> listarTodas() {
         List<Pessoa> pessoas = (List<Pessoa>) pessoaRepository.findAll();
         if (pessoas.isEmpty()) {
@@ -27,13 +30,13 @@ public class PessoaService {
         return pessoas;
     }
 
-    @Transactional()
+    @Transactional(readOnly = true)
     public List<Pessoa> listarAtivas() {
         return pessoaRepository.findByAtivoTrue();
     }
 
 
-    @Transactional()
+    @Transactional(readOnly = true)
     public Pessoa buscarPorId(Long id) {
         return pessoaRepository.findById(id)
                 .orElseThrow(() ->
@@ -42,7 +45,7 @@ public class PessoaService {
     }
 
 
-    @Transactional()
+    @Transactional(readOnly = true)
     public Pessoa buscarPorCpf(String cpf) {
 
         return pessoaRepository.findByCpf(cpf)
@@ -52,13 +55,13 @@ public class PessoaService {
         }
 
 
-    @Transactional()
+    @Transactional(readOnly = true)
     public List<Pessoa> buscarPorNome(String nome) {
         return pessoaRepository.findByNomeContainingIgnoreCase(nome);
     }
 
     @Transactional
-    public Pessoa cadastrar(PessoaDTO dto) {
+    public Pessoa cadastrar(PessoaRequest dto) {
 
         // Validação: CPF já cadastrado?
         if (pessoaRepository.existsByCpf(dto.getCpf())) {
@@ -83,12 +86,19 @@ public class PessoaService {
                 .ativo(true)
                 .build();
 
+        if (dto.getTipoAcessoId() != null) {
+            TipoAcesso tipo = tipoAcessoRepository.findById(dto.getTipoAcessoId())
+                    .orElseThrow(() -> new RuntimeException(
+                            "TipoAcesso não encontrado: " + dto.getTipoAcessoId()));
+            pessoa.setTipoAcesso(tipo);
+        }
+
             // Salvar no banco e retornar a entidade salva (com ID gerado)
             return pessoaRepository.save(pessoa);
         }
 
     @Transactional
-    public Pessoa atualizar(Long id, PessoaDTO dto) {
+    public Pessoa atualizar(Long id, PessoaRequest dto) {
 
         // Busca a pessoa (lança exceção se não existir)
         Pessoa pessoa = buscarPorId(id);
@@ -134,6 +144,14 @@ public class PessoaService {
         if (dto.getEstado() != null) {
             pessoa.setEstado(dto.getEstado());
         }
+
+        if (dto.getTipoAcessoId() != null) {
+            TipoAcesso tipo = tipoAcessoRepository.findById(dto.getTipoAcessoId())
+                    .orElseThrow(() -> new RuntimeException(
+                            "TipoAcesso não encontrado: " + dto.getTipoAcessoId()));
+            pessoa.setTipoAcesso(tipo);
+        }
+
         // save() com ID existente faz UPDATE (não INSERT)
         return pessoaRepository.save(pessoa);
     }

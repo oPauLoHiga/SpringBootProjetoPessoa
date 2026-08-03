@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PessoaDTO {
+public class PessoaRequest {
 
     @NotBlank
     @Size(min = 2, max = 100, message = "Nome deve ter entre 2 e 100 caracteres")
@@ -38,4 +38,10 @@ public class PessoaDTO {
     @Size(max = 2, message = "Estado deve ter 2 caracteres (sigla)")
     private String estado;
 
+    // Adicione em PessoaRequest.java (campo opcional — não é obrigatório):
+    private Long tipoAcessoId; // ID do tipo de acesso (pode ser null)
+
+    // Getter e Setter:
+    public Long getTipoAcessoId()            { return tipoAcessoId; }
+    public void setTipoAcessoId(Long id)    { this.tipoAcessoId = id; }
 }
