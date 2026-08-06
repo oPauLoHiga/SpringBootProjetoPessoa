@@ -74,7 +74,7 @@ public class PessoaController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> excluir(@PathVariable Long id) {
         Pessoa excluido = pessoaService.excluir(id);
-        return ResponseEntity.ok(excluido.getNome() + " excluÃ­do(a) com sucesso!");
+        return ResponseEntity.ok(excluido.getNome() + " excluido(a) com sucesso!");
     }
 
     private ResponseEntity<String> modificar(Long id) {

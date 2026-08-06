@@ -10,9 +10,8 @@ public class TipoAcessoResponse {
     private String  nome;
     private String  descricao;
     private boolean ativo;
-    private int     totalPessoas; // quantas pessoas tÃªm este tipo
+    private int     totalPessoas;
 
-    // Construtor estÃ¡tico que converte entidade â†’ DTO
     public static TipoAcessoResponse de(TipoAcesso t) {
         TipoAcessoResponse r = new TipoAcessoResponse();
         r.id           = t.getId();

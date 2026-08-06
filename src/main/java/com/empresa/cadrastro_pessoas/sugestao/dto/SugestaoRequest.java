@@ -18,7 +18,6 @@ public class SugestaoRequest {
     @Size(min = 10, message = "Descrição deve ter pelo menos 10 caracteres")
     private String descricao;
 
-    // ID da pessoa que está enviando a sugestão
     @NotNull(message = "ID da pessoa é obrigatório")
     private Long pessoaId;
 

@@ -11,7 +11,6 @@ public class TipoAcesso {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // nome do tipo â€” ex: ADMIN, OPERADOR, CLIENTE, VISITANTE
     @Column(nullable = false, unique = true, length = 50)
     private String nome;
 
@@ -21,9 +20,7 @@ public class TipoAcesso {
     @Column(nullable = false)
     private boolean ativo = true;
 
-    // mappedBy = nome do campo em Pessoa que referencia TipoAcesso
-    // cascade: ao salvar TipoAcesso nÃ£o afeta Pessoa (sem cascade)
-    // fetch LAZY: pessoas NÃƒO sÃ£o carregadas ao buscar um TipoAcesso
+
     @OneToMany(mappedBy = "tipoAcesso", fetch = FetchType.LAZY)
     private List<Pessoa> pessoas;
 

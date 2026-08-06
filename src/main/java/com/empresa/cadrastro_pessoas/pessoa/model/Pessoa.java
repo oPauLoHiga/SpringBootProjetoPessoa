@@ -25,24 +25,24 @@ public class Pessoa {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Nome Ã© obrigatÃ³rio")
+    @NotBlank(message = "Nome é obrigatorio")
     @Size(min = 2, max = 100, message = "Nome deve ter entre 2 a 100 caracteres")
     @Column(name = "nome", nullable = false, length = 100)
     private String nome;
 
-    @NotBlank(message = "CPF Ã© obrigatÃ³rio")
+    @NotBlank(message = "CPF é obrigatorio")
     @Column(name = "cpf", nullable = false, unique = true, length = 14)
     private String cpf;
 
-    @NotBlank(message = "E-mail Ã© obrigatÃ³rio")
-    @Email(message = "E-mail invÃ¡lido")
+    @NotBlank(message = "E-mail é obrigatorio")
+    @Email(message = "E-mail invalido")
     @Column(name = "email", nullable = false, unique = true, length = 150)
     private String email;
 
     @Column(name = "telefone", length = 20)
     private String telefone;
 
-    @NotNull(message = "Data de nascimento Ã© obrigatÃ³ria")
+    @NotNull(message = "Data de nascimento é obrigatoria")
     @Column(name = "data_nascimento", nullable = false)
     private LocalDate dataNascimento;
 

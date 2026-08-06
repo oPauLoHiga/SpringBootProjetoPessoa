@@ -13,12 +13,10 @@ public class TipoAcessoService {
 
     private final TipoAcessoRepository repository;
 
-    // InjeÃ§Ã£o de dependÃªncia via construtor (melhor prÃ¡tica)
     public TipoAcessoService(TipoAcessoRepository repository) {
         this.repository = repository;
     }
 
-    // â”€â”€ LISTAR TODOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     public List<TipoAcessoResponse> listarTodos() {
         return repository.findAll()
                 .stream()
@@ -26,7 +24,6 @@ public class TipoAcessoService {
                 .toList();
     }
 
-    // â”€â”€ LISTAR ATIVOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     public List<TipoAcessoResponse> listarAtivos() {
         return repository.findByAtivoTrue()
                 .stream()
@@ -34,14 +31,12 @@ public class TipoAcessoService {
                 .toList();
     }
 
-    // â”€â”€ BUSCAR POR ID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     public TipoAcessoResponse buscarPorId(Long id) {
         TipoAcesso tipo = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("TipoAcesso nÃ£o encontrado: " + id));
         return TipoAcessoResponse.de(tipo);
     }
 
-    // â”€â”€ CRIAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     @Transactional
     public TipoAcessoResponse criar(TipoAcessoRequest req) {
         if (repository.existsByNomeIgnoreCase(req.getNome())) {
@@ -51,7 +46,6 @@ public class TipoAcessoService {
         return TipoAcessoResponse.de(repository.save(tipo));
     }
 
-    // â”€â”€ ATUALIZAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     @Transactional
     public TipoAcessoResponse atualizar(Long id, TipoAcessoRequest req) {
         TipoAcesso tipo = repository.findById(id)
@@ -61,7 +55,6 @@ public class TipoAcessoService {
         return TipoAcessoResponse.de(repository.save(tipo));
     }
 
-    // â”€â”€ DESATIVAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     @Transactional
     public void desativar(Long id) {
         TipoAcesso tipo = repository.findById(id)
@@ -78,7 +71,6 @@ public class TipoAcessoService {
         repository.save(tipo);
     }
 
-    // â”€â”€ EXCLUIR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     @Transactional
     public void excluir(Long id) {
         if (!repository.existsById(id)) {

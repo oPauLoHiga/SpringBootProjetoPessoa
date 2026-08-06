@@ -20,32 +20,27 @@ public class TipoAcessoController {
         this.service = service;
     }
 
-    // GET /api/tipos-acesso â†’ lista todos
     @GetMapping
     public List<TipoAcessoResponse> listarTodos() {
         return service.listarTodos();
     }
 
-    // GET /api/tipos-acesso/ativos â†’ apenas ativos
     @GetMapping("/ativos")
     public List<TipoAcessoResponse> listarAtivos() {
         return service.listarAtivos();
     }
 
-    // GET /api/tipos-acesso/{id} â†’ busca por ID
     @GetMapping("/{id}")
     public TipoAcessoResponse buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id);
     }
 
-    // POST /api/tipos-acesso â†’ criar novo
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public TipoAcessoResponse criar(@RequestBody @Valid TipoAcessoRequest req) {
         return service.criar(req);
     }
 
-    // PUT /api/tipos-acesso/{id} â†’ atualizar
     @PutMapping("/{id}")
     public TipoAcessoResponse atualizar(
             @PathVariable Long id,
@@ -53,7 +48,6 @@ public class TipoAcessoController {
         return service.atualizar(id, req);
     }
 
-    // PATCH /api/tipos-acesso/{id}/desativar
     @PatchMapping("/{id}/desativar")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void desativar(@PathVariable Long id) {
@@ -66,7 +60,6 @@ public class TipoAcessoController {
         service.ativar(id);
     }
 
-    // DELETE /api/tipos-acesso/{id}
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void excluir(@PathVariable Long id) {

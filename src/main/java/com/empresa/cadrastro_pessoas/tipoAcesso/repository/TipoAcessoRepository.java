@@ -10,12 +10,9 @@ import java.util.Optional;
 @Repository
 public interface TipoAcessoRepository extends JpaRepository<TipoAcesso, Long> {
 
-    // Busca por nome exato (case insensitive)
     Optional<TipoAcesso> findByNomeIgnoreCase(String nome);
 
-    // Lista apenas os tipos ativos
     List<TipoAcesso> findByAtivoTrue();
 
-    // Verifica se jÃ¡ existe tipo com o mesmo nome
     boolean existsByNomeIgnoreCase(String nome);
 }

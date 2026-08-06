@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", 400);
-        body.put("error", "Dados invÃ¡lidos");
+        body.put("error", "Dados invalidos");
         body.put("messages", errors);
         return ResponseEntity.badRequest().body(body);
     }

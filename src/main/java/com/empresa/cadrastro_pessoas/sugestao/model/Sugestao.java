@@ -16,22 +16,16 @@ public class Sugestao {
     @Column(nullable = false, length = 100)
     private String titulo;
 
-    // TEXT no banco â€” suporta textos longos
     @Column(nullable = false, columnDefinition = "TEXT")
     private String descricao;
 
-    // EnumType.STRING salva "PENDENTE", "APROVADA" etc. no banco
-    // Nunca use EnumType.ORDINAL (quebraria ao reordenar o enum)
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private StatusSugestao status = StatusSugestao.PENDENTE;
 
-    // updatable = false: data Ã© definida na criaÃ§Ã£o e nunca alterada
     @Column(name = "data_criacao", nullable = false, updatable = false)
     private LocalDateTime dataCriacao;
 
-    // @ManyToOne: muitas sugestÃµes para uma pessoa
-    // optional = false: sugestÃ£o DEVE ter uma pessoa vinculada
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "pessoa_id", nullable = false)
     private Pessoa pessoa;

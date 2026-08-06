@@ -22,13 +22,13 @@ public class PessoaRequest {
     @Pattern(regexp = "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}", message = "CPF deve estar no formato 000.000.000-00")
     private String cpf;
 
-    @NotBlank(message = "E-mail Ã© obrigatÃ³rio")
+    @NotBlank(message = "E-mail é obrigatorio")
     @Email(message = "E-mail invÃ¡lido")
     private String email;
 
     private String telefone;
 
-    @NotNull(message = "Data de nascimento Ã© obrigatÃ³ria")
+    @NotNull(message = "Data de nascimento é obrigatoria")
     @Past(message = "Data de nascimento deve ser no passado")
     private LocalDate dataNascimento;
 

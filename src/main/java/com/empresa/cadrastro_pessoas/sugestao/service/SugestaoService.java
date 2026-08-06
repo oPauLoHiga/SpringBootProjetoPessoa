@@ -48,8 +48,6 @@ public class SugestaoService {
                 .orElseThrow(() -> new RuntimeException("SugestÃ£o nÃ£o encontrada: " + id));
         return SugestaoResponse.de(s);
     }
-
-    // â”€â”€ CRIAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     @Transactional
     public SugestaoResponse criar(SugestaoRequest req) {
         Pessoa pessoa = pessoaRepository.findById(req.getPessoaId())
@@ -65,7 +63,6 @@ public class SugestaoService {
         return SugestaoResponse.de(sugestaoRepository.save(sugestao));
     }
 
-    // â”€â”€ ALTERAR STATUS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     @Transactional
     public SugestaoResponse alterarStatus(Long id, StatusSugestao novoStatus) {
         Sugestao s = sugestaoRepository.findById(id)
@@ -74,7 +71,6 @@ public class SugestaoService {
         return SugestaoResponse.de(sugestaoRepository.save(s));
     }
 
-    // â”€â”€ EXCLUIR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     @Transactional
     public void excluir(Long id) {
         if (!sugestaoRepository.existsById(id)) {

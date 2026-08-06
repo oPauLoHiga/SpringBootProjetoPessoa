@@ -117,14 +117,14 @@ public class PessoaService {
         pessoaRepository.findByCpf(dto.getCpf())
                 .ifPresent(outra -> {
                     if (!outra.getId().equals(id)) {
-                        throw new BusinessException("CPF jÃ¡ cadastrado para outra pessoa.");
+                        throw new BusinessException("CPF ja¡ cadastrado para outra pessoa.");
                     }
                 });
 
         pessoaRepository.findByEmail(dto.getEmail())
                 .ifPresent(outra -> {
                     if (!outra.getId().equals(id)) {
-                        throw new BusinessException("E-mail jÃ¡ cadastrado para outra pessoa.");
+                        throw new BusinessException("E-mail ja¡ cadastrado para outra pessoa.");
                     }
                 });
 
@@ -140,7 +140,7 @@ public class PessoaService {
         if (dto.getTipoAcessoId() != null) {
             TipoAcesso tipo = tipoAcessoRepository.findById(dto.getTipoAcessoId())
                     .orElseThrow(() -> new ResourceNotFoundException(
-                            "Tipo de acesso nÃ£o encontrado: " + dto.getTipoAcessoId()));
+                            "Tipo de acesso não encontrado: " + dto.getTipoAcessoId()));
             pessoa.setTipoAcesso(tipo);
         }
 
@@ -175,7 +175,7 @@ public class PessoaService {
 
         String numeros = telefone.replaceAll("\\D", "");
         if (numeros.length() != 10 && numeros.length() != 11) {
-            throw new BusinessException("Telefone deve ter 10 ou 11 dÃ­gitos.");
+            throw new BusinessException("Telefone deve ter 10 ou 11 digitos.");
         }
         return numeros;
     }
