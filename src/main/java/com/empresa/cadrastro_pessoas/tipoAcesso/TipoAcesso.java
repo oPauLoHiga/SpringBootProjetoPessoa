@@ -1,6 +1,6 @@
-package com.empresa.cadrastro_pessoas.tipoAcesso;
+package com.empresa.cadrastro_pessoas.tipoacesso;
 
-import com.empresa.cadrastro_pessoas.pessoas.model.Pessoa;
+import com.empresa.cadrastro_pessoas.pessoa.model.Pessoa;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -11,7 +11,7 @@ public class TipoAcesso {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // nome do tipo — ex: ADMIN, OPERADOR, CLIENTE, VISITANTE
+    // nome do tipo â€” ex: ADMIN, OPERADOR, CLIENTE, VISITANTE
     @Column(nullable = false, unique = true, length = 50)
     private String nome;
 
@@ -22,8 +22,8 @@ public class TipoAcesso {
     private boolean ativo = true;
 
     // mappedBy = nome do campo em Pessoa que referencia TipoAcesso
-    // cascade: ao salvar TipoAcesso não afeta Pessoa (sem cascade)
-    // fetch LAZY: pessoas NÃO são carregadas ao buscar um TipoAcesso
+    // cascade: ao salvar TipoAcesso nÃ£o afeta Pessoa (sem cascade)
+    // fetch LAZY: pessoas NÃƒO sÃ£o carregadas ao buscar um TipoAcesso
     @OneToMany(mappedBy = "tipoAcesso", fetch = FetchType.LAZY)
     private List<Pessoa> pessoas;
 

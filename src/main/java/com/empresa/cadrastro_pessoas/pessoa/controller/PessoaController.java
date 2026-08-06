@@ -1,9 +1,9 @@
-package com.empresa.cadrastro_pessoas.pessoas.controller;
+package com.empresa.cadrastro_pessoas.pessoa.controller;
 
-import com.empresa.cadrastro_pessoas.pessoas.dto.PessoaRequest;
-import com.empresa.cadrastro_pessoas.pessoas.dto.PessoaResponse;
-import com.empresa.cadrastro_pessoas.pessoas.model.Pessoa;
-import com.empresa.cadrastro_pessoas.pessoas.service.PessoaService;
+import com.empresa.cadrastro_pessoas.pessoa.dto.PessoaRequest;
+import com.empresa.cadrastro_pessoas.pessoa.dto.PessoaResponse;
+import com.empresa.cadrastro_pessoas.pessoa.model.Pessoa;
+import com.empresa.cadrastro_pessoas.pessoa.service.PessoaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -74,7 +74,7 @@ public class PessoaController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> excluir(@PathVariable Long id) {
         Pessoa excluido = pessoaService.excluir(id);
-        return ResponseEntity.ok(excluido.getNome() + " excluído(a) com sucesso!");
+        return ResponseEntity.ok(excluido.getNome() + " excluÃ­do(a) com sucesso!");
     }
 
     private ResponseEntity<String> modificar(Long id) {

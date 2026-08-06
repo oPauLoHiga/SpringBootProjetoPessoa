@@ -1,7 +1,7 @@
 package com.empresa.cadrastro_pessoas.sugestao.service;
 
-import com.empresa.cadrastro_pessoas.pessoas.model.Pessoa;
-import com.empresa.cadrastro_pessoas.pessoas.repository.PessoaRepository;
+import com.empresa.cadrastro_pessoas.pessoa.model.Pessoa;
+import com.empresa.cadrastro_pessoas.pessoa.repository.PessoaRepository;
 import com.empresa.cadrastro_pessoas.sugestao.*;
 import com.empresa.cadrastro_pessoas.sugestao.dto.SugestaoRequest;
 import com.empresa.cadrastro_pessoas.sugestao.dto.SugestaoResponse;
@@ -45,16 +45,16 @@ public class SugestaoService {
     @Transactional(readOnly = true)
     public SugestaoResponse buscarPorId(Long id) {
         Sugestao s = sugestaoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Sugestão não encontrada: " + id));
+                .orElseThrow(() -> new RuntimeException("SugestÃ£o nÃ£o encontrada: " + id));
         return SugestaoResponse.de(s);
     }
 
-    // ── CRIAR ─────────────────────────────────────────────
+    // â”€â”€ CRIAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     @Transactional
     public SugestaoResponse criar(SugestaoRequest req) {
         Pessoa pessoa = pessoaRepository.findById(req.getPessoaId())
                 .orElseThrow(() -> new RuntimeException(
-                        "Pessoa não encontrada: " + req.getPessoaId()));
+                        "Pessoa nÃ£o encontrada: " + req.getPessoaId()));
 
         Sugestao sugestao = new Sugestao();
         sugestao.setTitulo(req.getTitulo());
@@ -65,20 +65,20 @@ public class SugestaoService {
         return SugestaoResponse.de(sugestaoRepository.save(sugestao));
     }
 
-    // ── ALTERAR STATUS ────────────────────────────────────
+    // â”€â”€ ALTERAR STATUS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     @Transactional
     public SugestaoResponse alterarStatus(Long id, StatusSugestao novoStatus) {
         Sugestao s = sugestaoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Sugestão não encontrada: " + id));
+                .orElseThrow(() -> new RuntimeException("SugestÃ£o nÃ£o encontrada: " + id));
         s.setStatus(novoStatus);
         return SugestaoResponse.de(sugestaoRepository.save(s));
     }
 
-    // ── EXCLUIR ───────────────────────────────────────────
+    // â”€â”€ EXCLUIR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     @Transactional
     public void excluir(Long id) {
         if (!sugestaoRepository.existsById(id)) {
-            throw new RuntimeException("Sugestão não encontrada: " + id);
+            throw new RuntimeException("SugestÃ£o nÃ£o encontrada: " + id);
         }
         sugestaoRepository.deleteById(id);
     }

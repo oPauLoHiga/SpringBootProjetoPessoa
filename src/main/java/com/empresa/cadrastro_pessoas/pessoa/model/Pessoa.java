@@ -1,6 +1,6 @@
-package com.empresa.cadrastro_pessoas.pessoas.model;
+package com.empresa.cadrastro_pessoas.pessoa.model;
 
-import com.empresa.cadrastro_pessoas.tipoAcesso.TipoAcesso;
+import com.empresa.cadrastro_pessoas.tipoacesso.TipoAcesso;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -25,24 +25,24 @@ public class Pessoa {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Nome é obrigatório")
+    @NotBlank(message = "Nome Ã© obrigatÃ³rio")
     @Size(min = 2, max = 100, message = "Nome deve ter entre 2 a 100 caracteres")
     @Column(name = "nome", nullable = false, length = 100)
     private String nome;
 
-    @NotBlank(message = "CPF é obrigatório")
+    @NotBlank(message = "CPF Ã© obrigatÃ³rio")
     @Column(name = "cpf", nullable = false, unique = true, length = 14)
     private String cpf;
 
-    @NotBlank(message = "E-mail é obrigatório")
-    @Email(message = "E-mail inválido")
+    @NotBlank(message = "E-mail Ã© obrigatÃ³rio")
+    @Email(message = "E-mail invÃ¡lido")
     @Column(name = "email", nullable = false, unique = true, length = 150)
     private String email;
 
     @Column(name = "telefone", length = 20)
     private String telefone;
 
-    @NotNull(message = "Data de nascimento é obrigatória")
+    @NotNull(message = "Data de nascimento Ã© obrigatÃ³ria")
     @Column(name = "data_nascimento", nullable = false)
     private LocalDate dataNascimento;
 

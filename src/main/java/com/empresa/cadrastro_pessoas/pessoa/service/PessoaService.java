@@ -1,13 +1,13 @@
-package com.empresa.cadrastro_pessoas.pessoas.service;
+package com.empresa.cadrastro_pessoas.pessoa.service;
 
-import com.empresa.cadrastro_pessoas.exeption.BusinessException;
-import com.empresa.cadrastro_pessoas.exeption.ResourceNotFoundException;
-import com.empresa.cadrastro_pessoas.pessoas.dto.PessoaRequest;
-import com.empresa.cadrastro_pessoas.pessoas.dto.PessoaResponse;
-import com.empresa.cadrastro_pessoas.pessoas.model.Pessoa;
-import com.empresa.cadrastro_pessoas.pessoas.repository.PessoaRepository;
-import com.empresa.cadrastro_pessoas.tipoAcesso.TipoAcesso;
-import com.empresa.cadrastro_pessoas.tipoAcesso.repository.TipoAcessoRepository;
+import com.empresa.cadrastro_pessoas.shared.exception.BusinessException;
+import com.empresa.cadrastro_pessoas.shared.exception.ResourceNotFoundException;
+import com.empresa.cadrastro_pessoas.pessoa.dto.PessoaRequest;
+import com.empresa.cadrastro_pessoas.pessoa.dto.PessoaResponse;
+import com.empresa.cadrastro_pessoas.pessoa.model.Pessoa;
+import com.empresa.cadrastro_pessoas.pessoa.repository.PessoaRepository;
+import com.empresa.cadrastro_pessoas.tipoacesso.TipoAcesso;
+import com.empresa.cadrastro_pessoas.tipoacesso.repository.TipoAcessoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +26,7 @@ public class PessoaService {
         List<Pessoa> pessoas = pessoaRepository.findAll();
 
         if (pessoas.isEmpty()) {
-            throw new BusinessException("Não foram encontradas pessoas");
+            throw new BusinessException("NÃ£o foram encontradas pessoas");
         }
 
         return pessoas.stream()
@@ -45,7 +45,7 @@ public class PessoaService {
     private Pessoa buscarEntidadePorId(Long id) {
         return pessoaRepository.findById(id)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Pessoa não encontrada com ID: " + id)
+                        new ResourceNotFoundException("Pessoa nÃ£o encontrada com ID: " + id)
                 );
     }
 
@@ -58,7 +58,7 @@ public class PessoaService {
     public PessoaResponse buscarPorCpf(String cpf) {
         Pessoa pessoa = pessoaRepository.findByCpf(cpf)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Pessoa não encontrada com CPF: " + cpf)
+                        new ResourceNotFoundException("Pessoa nÃ£o encontrada com CPF: " + cpf)
                 );
 
         return PessoaResponse.de(pessoa);
@@ -75,18 +75,18 @@ public class PessoaService {
     @Transactional
     public Pessoa cadastrar(PessoaRequest dto) {
         if (pessoaRepository.existsByCpf(dto.getCpf())) {
-            throw new BusinessException("CPF já cadastrado: " + dto.getCpf());
+            throw new BusinessException("CPF jÃ¡ cadastrado: " + dto.getCpf());
         }
 
         if (pessoaRepository.existsByEmail(dto.getEmail())) {
-            throw new BusinessException("E-mail já cadastrado: " + dto.getEmail());
+            throw new BusinessException("E-mail jÃ¡ cadastrado: " + dto.getEmail());
         }
 
         Pessoa pessoa = Pessoa.builder()
                 .nome(dto.getNome())
                 .cpf(dto.getCpf())
                 .email(dto.getEmail())
-                .telefone(dto.getTelefone())
+                .telefone(normalizarTelefone(dto.getTelefone()))
                 .dataNascimento(dto.getDataNascimento())
                 .endereco(dto.getEndereco())
                 .cidade(dto.getCidade())
@@ -97,8 +97,14 @@ public class PessoaService {
         if (dto.getTipoAcessoId() != null) {
             TipoAcesso tipo = tipoAcessoRepository.findById(dto.getTipoAcessoId())
                     .orElseThrow(() -> new ResourceNotFoundException(
-                            "Tipo de acesso não encontrado: " + dto.getTipoAcessoId()));
+                            "Tipo de acesso nÃ£o encontrado: " + dto.getTipoAcessoId()));
             pessoa.setTipoAcesso(tipo);
+        }
+
+        if (dto.getTipoAcessoId() == null) {
+            TipoAcesso visitante = tipoAcessoRepository.findByNomeIgnoreCase("Visitante")
+                    .orElseThrow(() -> new BusinessException("Tipo de acesso padrÃ£o nÃ£o configurado."));
+            pessoa.setTipoAcesso(visitante);
         }
 
         return pessoaRepository.save(pessoa);
@@ -111,21 +117,21 @@ public class PessoaService {
         pessoaRepository.findByCpf(dto.getCpf())
                 .ifPresent(outra -> {
                     if (!outra.getId().equals(id)) {
-                        throw new BusinessException("CPF já cadastrado para outra pessoa.");
+                        throw new BusinessException("CPF jÃ¡ cadastrado para outra pessoa.");
                     }
                 });
 
         pessoaRepository.findByEmail(dto.getEmail())
                 .ifPresent(outra -> {
                     if (!outra.getId().equals(id)) {
-                        throw new BusinessException("E-mail já cadastrado para outra pessoa.");
+                        throw new BusinessException("E-mail jÃ¡ cadastrado para outra pessoa.");
                     }
                 });
 
         pessoa.setNome(dto.getNome());
         pessoa.setCpf(dto.getCpf());
         pessoa.setEmail(dto.getEmail());
-        pessoa.setTelefone(dto.getTelefone());
+        pessoa.setTelefone(normalizarTelefone(dto.getTelefone()));
         pessoa.setDataNascimento(dto.getDataNascimento());
         pessoa.setEndereco(dto.getEndereco());
         pessoa.setCidade(dto.getCidade());
@@ -134,7 +140,7 @@ public class PessoaService {
         if (dto.getTipoAcessoId() != null) {
             TipoAcesso tipo = tipoAcessoRepository.findById(dto.getTipoAcessoId())
                     .orElseThrow(() -> new ResourceNotFoundException(
-                            "Tipo de acesso não encontrado: " + dto.getTipoAcessoId()));
+                            "Tipo de acesso nÃ£o encontrado: " + dto.getTipoAcessoId()));
             pessoa.setTipoAcesso(tipo);
         }
 
@@ -160,5 +166,17 @@ public class PessoaService {
         Pessoa pessoa = buscarEntidadePorId(id);
         pessoaRepository.delete(pessoa);
         return pessoa;
+    }
+
+    private String normalizarTelefone(String telefone) {
+        if (telefone == null || telefone.isBlank()) {
+            return null;
+        }
+
+        String numeros = telefone.replaceAll("\\D", "");
+        if (numeros.length() != 10 && numeros.length() != 11) {
+            throw new BusinessException("Telefone deve ter 10 ou 11 dÃ­gitos.");
+        }
+        return numeros;
     }
 }

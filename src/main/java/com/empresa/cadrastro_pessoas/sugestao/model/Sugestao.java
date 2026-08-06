@@ -1,6 +1,6 @@
 package com.empresa.cadrastro_pessoas.sugestao.model;
 
-import com.empresa.cadrastro_pessoas.pessoas.model.Pessoa;
+import com.empresa.cadrastro_pessoas.pessoa.model.Pessoa;
 import com.empresa.cadrastro_pessoas.sugestao.StatusSugestao;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -16,7 +16,7 @@ public class Sugestao {
     @Column(nullable = false, length = 100)
     private String titulo;
 
-    // TEXT no banco — suporta textos longos
+    // TEXT no banco â€” suporta textos longos
     @Column(nullable = false, columnDefinition = "TEXT")
     private String descricao;
 
@@ -26,12 +26,12 @@ public class Sugestao {
     @Column(nullable = false, length = 20)
     private StatusSugestao status = StatusSugestao.PENDENTE;
 
-    // updatable = false: data é definida na criação e nunca alterada
+    // updatable = false: data Ã© definida na criaÃ§Ã£o e nunca alterada
     @Column(name = "data_criacao", nullable = false, updatable = false)
     private LocalDateTime dataCriacao;
 
-    // @ManyToOne: muitas sugestões para uma pessoa
-    // optional = false: sugestão DEVE ter uma pessoa vinculada
+    // @ManyToOne: muitas sugestÃµes para uma pessoa
+    // optional = false: sugestÃ£o DEVE ter uma pessoa vinculada
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "pessoa_id", nullable = false)
     private Pessoa pessoa;

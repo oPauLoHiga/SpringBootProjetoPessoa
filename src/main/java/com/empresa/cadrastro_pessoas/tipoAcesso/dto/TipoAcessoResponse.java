@@ -1,6 +1,6 @@
-package com.empresa.cadrastro_pessoas.tipoAcesso.dto;
+package com.empresa.cadrastro_pessoas.tipoacesso.dto;
 
-import com.empresa.cadrastro_pessoas.tipoAcesso.TipoAcesso;
+import com.empresa.cadrastro_pessoas.tipoacesso.TipoAcesso;
 import lombok.Getter;
 
 @Getter
@@ -10,9 +10,9 @@ public class TipoAcessoResponse {
     private String  nome;
     private String  descricao;
     private boolean ativo;
-    private int     totalPessoas; // quantas pessoas têm este tipo
+    private int     totalPessoas; // quantas pessoas tÃªm este tipo
 
-    // Construtor estático que converte entidade → DTO
+    // Construtor estÃ¡tico que converte entidade â†’ DTO
     public static TipoAcessoResponse de(TipoAcesso t) {
         TipoAcessoResponse r = new TipoAcessoResponse();
         r.id           = t.getId();

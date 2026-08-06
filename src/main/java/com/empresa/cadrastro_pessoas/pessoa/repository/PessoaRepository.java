@@ -1,6 +1,6 @@
-package com.empresa.cadrastro_pessoas.pessoas.repository;
+package com.empresa.cadrastro_pessoas.pessoa.repository;
 
-import com.empresa.cadrastro_pessoas.pessoas.model.Pessoa;
+import com.empresa.cadrastro_pessoas.pessoa.model.Pessoa;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,14 +19,16 @@ public interface PessoaRepository extends JpaRepository<Pessoa, Long> {
         // Buscar por e-mail
         Optional<Pessoa> findByEmail(String email);
 
-        // Verificar se CPF já existe
+        // Verificar se CPF jÃ¡ existe
         boolean existsByCpf(String cpf);
 
-        // Verificar se e-mail já existe
+        // Verificar se e-mail jÃ¡ existe
         boolean existsByEmail(String email);
 
         // Buscar todas as pessoas ativas
         List<Pessoa> findByAtivoTrue();
+
+        List<Pessoa> findByTipoAcessoIsNull();
 
         // Buscar por nome (contendo, case-insensitive)
         List<Pessoa> findByNomeContainingIgnoreCase(String nome);

@@ -1,9 +1,10 @@
-package com.empresa.cadrastro_pessoas.pessoas.dto;
+package com.empresa.cadrastro_pessoas.pessoa.dto;
 
-import com.empresa.cadrastro_pessoas.pessoas.model.Pessoa;
+import com.empresa.cadrastro_pessoas.pessoa.model.Pessoa;
 import lombok.Getter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 public class PessoaResponse {
@@ -15,7 +16,10 @@ public class PessoaResponse {
     private String telefone;
     private String cidade;
     private String estado;
+    private String endereco;
     private Boolean ativo;
+    private LocalDate criadoEm;
+    private LocalDateTime atualizadoEm;
 
     private Long tipoAcessoId;
     private String tipoAcessoNome;
@@ -31,7 +35,10 @@ public class PessoaResponse {
             r.telefone = p.getTelefone();
             r.cidade = p.getCidade();
             r.estado = p.getEstado();
+            r.endereco = p.getEndereco();
             r.ativo = p.getAtivo();
+            r.criadoEm = p.getCriadoEm();
+            r.atualizadoEm = p.getAtualizadoEm();
 
         r.tipoAcessoId = p.getTipoAcesso() != null
                 ? p.getTipoAcesso().getId()

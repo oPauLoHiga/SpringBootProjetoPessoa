@@ -1,6 +1,6 @@
-package com.empresa.cadrastro_pessoas.tipoAcesso.repository;
+package com.empresa.cadrastro_pessoas.tipoacesso.repository;
 
-import com.empresa.cadrastro_pessoas.tipoAcesso.TipoAcesso;
+import com.empresa.cadrastro_pessoas.tipoacesso.TipoAcesso;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,6 +16,6 @@ public interface TipoAcessoRepository extends JpaRepository<TipoAcesso, Long> {
     // Lista apenas os tipos ativos
     List<TipoAcesso> findByAtivoTrue();
 
-    // Verifica se já existe tipo com o mesmo nome
+    // Verifica se jÃ¡ existe tipo com o mesmo nome
     boolean existsByNomeIgnoreCase(String nome);
 }

@@ -1,9 +1,9 @@
-package com.empresa.cadrastro_pessoas.tipoAcesso.service;
+package com.empresa.cadrastro_pessoas.tipoacesso.service;
 
-import com.empresa.cadrastro_pessoas.tipoAcesso.TipoAcesso;
-import com.empresa.cadrastro_pessoas.tipoAcesso.dto.TipoAcessoRequest;
-import com.empresa.cadrastro_pessoas.tipoAcesso.dto.TipoAcessoResponse;
-import com.empresa.cadrastro_pessoas.tipoAcesso.repository.TipoAcessoRepository;
+import com.empresa.cadrastro_pessoas.tipoacesso.TipoAcesso;
+import com.empresa.cadrastro_pessoas.tipoacesso.dto.TipoAcessoRequest;
+import com.empresa.cadrastro_pessoas.tipoacesso.dto.TipoAcessoResponse;
+import com.empresa.cadrastro_pessoas.tipoacesso.repository.TipoAcessoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -13,12 +13,12 @@ public class TipoAcessoService {
 
     private final TipoAcessoRepository repository;
 
-    // Injeção de dependência via construtor (melhor prática)
+    // InjeÃ§Ã£o de dependÃªncia via construtor (melhor prÃ¡tica)
     public TipoAcessoService(TipoAcessoRepository repository) {
         this.repository = repository;
     }
 
-    // ── LISTAR TODOS ──────────────────────────────────────
+    // â”€â”€ LISTAR TODOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     public List<TipoAcessoResponse> listarTodos() {
         return repository.findAll()
                 .stream()
@@ -26,7 +26,7 @@ public class TipoAcessoService {
                 .toList();
     }
 
-    // ── LISTAR ATIVOS ─────────────────────────────────────
+    // â”€â”€ LISTAR ATIVOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     public List<TipoAcessoResponse> listarAtivos() {
         return repository.findByAtivoTrue()
                 .stream()
@@ -34,47 +34,55 @@ public class TipoAcessoService {
                 .toList();
     }
 
-    // ── BUSCAR POR ID ─────────────────────────────────────
+    // â”€â”€ BUSCAR POR ID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     public TipoAcessoResponse buscarPorId(Long id) {
         TipoAcesso tipo = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("TipoAcesso não encontrado: " + id));
+                .orElseThrow(() -> new RuntimeException("TipoAcesso nÃ£o encontrado: " + id));
         return TipoAcessoResponse.de(tipo);
     }
 
-    // ── CRIAR ─────────────────────────────────────────────
+    // â”€â”€ CRIAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     @Transactional
     public TipoAcessoResponse criar(TipoAcessoRequest req) {
         if (repository.existsByNomeIgnoreCase(req.getNome())) {
-            throw new RuntimeException("Já existe um TipoAcesso com o nome: " + req.getNome());
+            throw new RuntimeException("JÃ¡ existe um TipoAcesso com o nome: " + req.getNome());
         }
         TipoAcesso tipo = new TipoAcesso(req.getNome(), req.getDescricao());
         return TipoAcessoResponse.de(repository.save(tipo));
     }
 
-    // ── ATUALIZAR ─────────────────────────────────────────
+    // â”€â”€ ATUALIZAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     @Transactional
     public TipoAcessoResponse atualizar(Long id, TipoAcessoRequest req) {
         TipoAcesso tipo = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("TipoAcesso não encontrado: " + id));
+                .orElseThrow(() -> new RuntimeException("TipoAcesso nÃ£o encontrado: " + id));
         tipo.setNome(req.getNome());
         tipo.setDescricao(req.getDescricao());
         return TipoAcessoResponse.de(repository.save(tipo));
     }
 
-    // ── DESATIVAR ─────────────────────────────────────────
+    // â”€â”€ DESATIVAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     @Transactional
     public void desativar(Long id) {
         TipoAcesso tipo = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("TipoAcesso não encontrado: " + id));
+                .orElseThrow(() -> new RuntimeException("TipoAcesso nÃ£o encontrado: " + id));
         tipo.setAtivo(false);
         repository.save(tipo);
     }
 
-    // ── EXCLUIR ───────────────────────────────────────────
+    @Transactional
+    public void ativar(Long id) {
+        TipoAcesso tipo = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("TipoAcesso nÃ£o encontrado: " + id));
+        tipo.setAtivo(true);
+        repository.save(tipo);
+    }
+
+    // â”€â”€ EXCLUIR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     @Transactional
     public void excluir(Long id) {
         if (!repository.existsById(id)) {
-            throw new RuntimeException("TipoAcesso não encontrado: " + id);
+            throw new RuntimeException("TipoAcesso nÃ£o encontrado: " + id);
         }
         repository.deleteById(id);
     }
