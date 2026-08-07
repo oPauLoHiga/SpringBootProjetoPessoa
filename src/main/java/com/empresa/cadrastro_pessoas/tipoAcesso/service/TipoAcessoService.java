@@ -33,14 +33,14 @@ public class TipoAcessoService {
 
     public TipoAcessoResponse buscarPorId(Long id) {
         TipoAcesso tipo = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("TipoAcesso nÃ£o encontrado: " + id));
+                .orElseThrow(() -> new RuntimeException("TipoAcesso não encontrado: " + id));
         return TipoAcessoResponse.de(tipo);
     }
 
     @Transactional
     public TipoAcessoResponse criar(TipoAcessoRequest req) {
         if (repository.existsByNomeIgnoreCase(req.getNome())) {
-            throw new RuntimeException("JÃ¡ existe um TipoAcesso com o nome: " + req.getNome());
+            throw new RuntimeException("Já existe um TipoAcesso com o nome: " + req.getNome());
         }
         TipoAcesso tipo = new TipoAcesso(req.getNome(), req.getDescricao());
         return TipoAcessoResponse.de(repository.save(tipo));
@@ -49,7 +49,7 @@ public class TipoAcessoService {
     @Transactional
     public TipoAcessoResponse atualizar(Long id, TipoAcessoRequest req) {
         TipoAcesso tipo = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("TipoAcesso nÃ£o encontrado: " + id));
+                .orElseThrow(() -> new RuntimeException("TipoAcesso não encontrado: " + id));
         tipo.setNome(req.getNome());
         tipo.setDescricao(req.getDescricao());
         return TipoAcessoResponse.de(repository.save(tipo));
@@ -58,7 +58,7 @@ public class TipoAcessoService {
     @Transactional
     public void desativar(Long id) {
         TipoAcesso tipo = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("TipoAcesso nÃ£o encontrado: " + id));
+                .orElseThrow(() -> new RuntimeException("TipoAcesso não encontrado: " + id));
         tipo.setAtivo(false);
         repository.save(tipo);
     }
@@ -66,7 +66,7 @@ public class TipoAcessoService {
     @Transactional
     public void ativar(Long id) {
         TipoAcesso tipo = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("TipoAcesso nÃ£o encontrado: " + id));
+                .orElseThrow(() -> new RuntimeException("TipoAcesso não encontrado: " + id));
         tipo.setAtivo(true);
         repository.save(tipo);
     }
@@ -74,7 +74,7 @@ public class TipoAcessoService {
     @Transactional
     public void excluir(Long id) {
         if (!repository.existsById(id)) {
-            throw new RuntimeException("TipoAcesso nÃ£o encontrado: " + id);
+            throw new RuntimeException("TipoAcesso não encontrado: " + id);
         }
         repository.deleteById(id);
     }

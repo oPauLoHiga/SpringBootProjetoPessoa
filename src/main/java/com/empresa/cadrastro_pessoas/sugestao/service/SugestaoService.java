@@ -45,14 +45,14 @@ public class SugestaoService {
     @Transactional(readOnly = true)
     public SugestaoResponse buscarPorId(Long id) {
         Sugestao s = sugestaoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("SugestÃ£o nÃ£o encontrada: " + id));
+                .orElseThrow(() -> new RuntimeException("Sugestão não encontrada: " + id));
         return SugestaoResponse.de(s);
     }
     @Transactional
     public SugestaoResponse criar(SugestaoRequest req) {
         Pessoa pessoa = pessoaRepository.findById(req.getPessoaId())
                 .orElseThrow(() -> new RuntimeException(
-                        "Pessoa nÃ£o encontrada: " + req.getPessoaId()));
+                        "Pessoa não encontrada: " + req.getPessoaId()));
 
         Sugestao sugestao = new Sugestao();
         sugestao.setTitulo(req.getTitulo());
@@ -66,7 +66,7 @@ public class SugestaoService {
     @Transactional
     public SugestaoResponse alterarStatus(Long id, StatusSugestao novoStatus) {
         Sugestao s = sugestaoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("SugestÃ£o nÃ£o encontrada: " + id));
+                .orElseThrow(() -> new RuntimeException("Sugestão não encontrada: " + id));
         s.setStatus(novoStatus);
         return SugestaoResponse.de(sugestaoRepository.save(s));
     }
@@ -74,7 +74,7 @@ public class SugestaoService {
     @Transactional
     public void excluir(Long id) {
         if (!sugestaoRepository.existsById(id)) {
-            throw new RuntimeException("SugestÃ£o nÃ£o encontrada: " + id);
+            throw new RuntimeException("Sugestão não encontrada: " + id);
         }
         sugestaoRepository.deleteById(id);
     }
