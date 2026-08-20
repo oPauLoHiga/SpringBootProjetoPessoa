@@ -23,13 +23,8 @@ public class PessoaService {
 
     @Transactional(readOnly = true)
     public List<PessoaResponse> listarTodas() {
-        List<Pessoa> pessoas = pessoaRepository.findAll();
-
-        if (pessoas.isEmpty()) {
-            throw new BusinessException("NÃ£o foram encontradas pessoas");
-        }
-
-        return pessoas.stream()
+        return pessoaRepository.findAll()
+                .stream()
                 .map(PessoaResponse::de)
                 .toList();
     }
@@ -45,7 +40,7 @@ public class PessoaService {
     private Pessoa buscarEntidadePorId(Long id) {
         return pessoaRepository.findById(id)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Pessoa nÃ£o encontrada com ID: " + id)
+                        new ResourceNotFoundException("Pessoa não encontrada com ID: " + id)
                 );
     }
 
@@ -58,7 +53,7 @@ public class PessoaService {
     public PessoaResponse buscarPorCpf(String cpf) {
         Pessoa pessoa = pessoaRepository.findByCpf(cpf)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Pessoa nÃ£o encontrada com CPF: " + cpf)
+                        new ResourceNotFoundException("Pessoa não encontrada com CPF: " + cpf)
                 );
 
         return PessoaResponse.de(pessoa);
@@ -75,11 +70,11 @@ public class PessoaService {
     @Transactional
     public Pessoa cadastrar(PessoaRequest dto) {
         if (pessoaRepository.existsByCpf(dto.getCpf())) {
-            throw new BusinessException("CPF jÃ¡ cadastrado: " + dto.getCpf());
+            throw new BusinessException("CPF já cadastrado: " + dto.getCpf());
         }
 
         if (pessoaRepository.existsByEmail(dto.getEmail())) {
-            throw new BusinessException("E-mail jÃ¡ cadastrado: " + dto.getEmail());
+            throw new BusinessException("E-mail já cadastrado: " + dto.getEmail());
         }
 
         Pessoa pessoa = Pessoa.builder()
@@ -97,13 +92,13 @@ public class PessoaService {
         if (dto.getTipoAcessoId() != null) {
             TipoAcesso tipo = tipoAcessoRepository.findById(dto.getTipoAcessoId())
                     .orElseThrow(() -> new ResourceNotFoundException(
-                            "Tipo de acesso nÃ£o encontrado: " + dto.getTipoAcessoId()));
+                            "Tipo de acesso não encontrado: " + dto.getTipoAcessoId()));
             pessoa.setTipoAcesso(tipo);
         }
 
         if (dto.getTipoAcessoId() == null) {
             TipoAcesso visitante = tipoAcessoRepository.findByNomeIgnoreCase("Visitante")
-                    .orElseThrow(() -> new BusinessException("Tipo de acesso padrÃ£o nÃ£o configurado."));
+                    .orElseThrow(() -> new BusinessException("Tipo de acesso padrão não configurado."));
             pessoa.setTipoAcesso(visitante);
         }
 
@@ -117,14 +112,14 @@ public class PessoaService {
         pessoaRepository.findByCpf(dto.getCpf())
                 .ifPresent(outra -> {
                     if (!outra.getId().equals(id)) {
-                        throw new BusinessException("CPF ja¡ cadastrado para outra pessoa.");
+                        throw new BusinessException("CPF já cadastrado para outra pessoa.");
                     }
                 });
 
         pessoaRepository.findByEmail(dto.getEmail())
                 .ifPresent(outra -> {
                     if (!outra.getId().equals(id)) {
-                        throw new BusinessException("E-mail ja¡ cadastrado para outra pessoa.");
+                        throw new BusinessException("E-mail já cadastrado para outra pessoa.");
                     }
                 });
 

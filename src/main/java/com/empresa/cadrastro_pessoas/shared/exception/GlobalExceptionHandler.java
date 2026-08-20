@@ -1,6 +1,6 @@
 package com.empresa.cadrastro_pessoas.shared.exception;
 
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -9,24 +9,25 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.*;
 
-@RestControllerAdvice   // â† Intercepta exceÃ§Ãµes de todos os controllers
+@Slf4j
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Recurso nÃ£o encontrado â†’ 404
+    // Recurso não encontrado -> 404
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNotFound(
             ResourceNotFoundException ex) {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    // Regra de negÃ³cio violada â†’ 400
+    // Regra de negócio violada -> 400
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<Map<String, Object>> handleBusiness(
             BusinessException ex) {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
-    // ValidaÃ§Ã£o de campos (@Valid) â†’ 400 com lista de erros
+    // Validação de campos (@Valid) -> 400 com lista de erros
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(
             MethodArgumentNotValidException ex) {
@@ -42,11 +43,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(body);
     }
 
-    // Erro genÃ©rico â†’ 500
+    // Erro genérico -> 500 sem expor detalhes internos ao cliente
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR,
-                "Erro interno: " + ex.getMessage());
+        log.error("Erro interno não tratado", ex);
+        return buildResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Ocorreu um erro interno inesperado."
+        );
     }
 
     private ResponseEntity<Map<String, Object>> buildResponse(

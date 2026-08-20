@@ -2,6 +2,7 @@ package com.empresa.cadrastro_pessoas.sugestao.service;
 
 import com.empresa.cadrastro_pessoas.pessoa.model.Pessoa;
 import com.empresa.cadrastro_pessoas.pessoa.repository.PessoaRepository;
+import com.empresa.cadrastro_pessoas.shared.exception.ResourceNotFoundException;
 import com.empresa.cadrastro_pessoas.sugestao.*;
 import com.empresa.cadrastro_pessoas.sugestao.dto.SugestaoRequest;
 import com.empresa.cadrastro_pessoas.sugestao.dto.SugestaoResponse;
@@ -45,13 +46,13 @@ public class SugestaoService {
     @Transactional(readOnly = true)
     public SugestaoResponse buscarPorId(Long id) {
         Sugestao s = sugestaoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Sugestão não encontrada: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Sugestão não encontrada: " + id));
         return SugestaoResponse.de(s);
     }
     @Transactional
     public SugestaoResponse criar(SugestaoRequest req) {
         Pessoa pessoa = pessoaRepository.findById(req.getPessoaId())
-                .orElseThrow(() -> new RuntimeException(
+                .orElseThrow(() -> new ResourceNotFoundException(
                         "Pessoa não encontrada: " + req.getPessoaId()));
 
         Sugestao sugestao = new Sugestao();
@@ -66,7 +67,7 @@ public class SugestaoService {
     @Transactional
     public SugestaoResponse alterarStatus(Long id, StatusSugestao novoStatus) {
         Sugestao s = sugestaoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Sugestão não encontrada: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Sugestão não encontrada: " + id));
         s.setStatus(novoStatus);
         return SugestaoResponse.de(sugestaoRepository.save(s));
     }
@@ -74,7 +75,7 @@ public class SugestaoService {
     @Transactional
     public void excluir(Long id) {
         if (!sugestaoRepository.existsById(id)) {
-            throw new RuntimeException("Sugestão não encontrada: " + id);
+            throw new ResourceNotFoundException("Sugestão não encontrada: " + id);
         }
         sugestaoRepository.deleteById(id);
     }

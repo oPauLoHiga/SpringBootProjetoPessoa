@@ -15,7 +15,7 @@ public class SugestaoRequest {
     private String titulo;
 
     @NotBlank(message = "Descrição é obrigatória")
-    @Size(min = 10, message = "Descrição deve ter pelo menos 10 caracteres")
+    @Size(min = 10, max = 1000, message = "Descrição deve ter entre 10 e 1000 caracteres")
     private String descricao;
 
     @NotNull(message = "ID da pessoa é obrigatório")
