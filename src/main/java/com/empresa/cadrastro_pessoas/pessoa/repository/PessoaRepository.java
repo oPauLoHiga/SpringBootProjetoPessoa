@@ -16,9 +16,13 @@ public interface PessoaRepository extends JpaRepository<Pessoa, Long> {
 
         Optional<Pessoa> findByEmail(String email);
 
+        Optional<Pessoa> findByEmailIgnoreCase(String email);
+
         boolean existsByCpf(String cpf);
 
         boolean existsByEmail(String email);
+
+        boolean existsByEmailIgnoreCase(String email);
 
         List<Pessoa> findByAtivoTrue();
 

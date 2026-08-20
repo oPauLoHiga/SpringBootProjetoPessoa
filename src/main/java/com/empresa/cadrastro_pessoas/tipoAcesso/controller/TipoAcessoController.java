@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/tipos-acesso")
-@CrossOrigin(origins = "http://localhost:5173")
 public class TipoAcessoController {
 
     private final TipoAcessoService service;

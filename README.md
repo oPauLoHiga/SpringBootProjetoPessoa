@@ -5,9 +5,19 @@
 ![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql&logoColor=white)
 ![Maven](https://img.shields.io/badge/Maven-Wrapper-C71A36?logo=apachemaven&logoColor=white)
 
-API REST desenvolvida com Spring Boot para gerenciar pessoas e tipos de acesso. O projeto aplica uma arquitetura em camadas, persistência com Spring Data JPA, validação de dados e tratamento centralizado de exceções.
+API REST desenvolvida com Spring Boot para gerenciar pessoas, sugestões e contas de acesso. O projeto usa autenticação por sessão, autorização por perfil, proteção CSRF, senhas protegidas e tratamento centralizado de exceções.
 
 ## Funcionalidades
+
+### Acesso e segurança
+
+- Cadastro público que sempre cria uma conta `VISITANTE` vinculada à pessoa.
+- Login e logout por sessão com cookie `HttpOnly`.
+- Senhas armazenadas por hash, nunca em texto puro.
+- Perfis `ADMIN`, `OPERADOR` e `VISITANTE` verificados no backend.
+- Proteção CSRF para todas as operações de alteração.
+- Administração de contas, perfis, status e redefinição de senha.
+- Criação opcional do primeiro administrador por variáveis de ambiente.
 
 ### Pessoas
 
@@ -32,12 +42,14 @@ API REST desenvolvida com Spring Boot para gerenciar pessoas e tipos de acesso. 
 - Java 21
 - Spring Boot 4.1.0
 - Spring Web MVC
+- Spring Security
 - Spring Data JPA
 - Jakarta Validation
 - Hibernate
 - MySQL
 - Lombok
 - Maven Wrapper
+- H2 somente nos testes automatizados
 
 ## Arquitetura
 
@@ -45,19 +57,21 @@ O projeto está organizado em camadas com responsabilidades separadas:
 
 ```text
 src/main/java/com/empresa/cadrastro_pessoas/
-├── config/                 # Configuração de CORS
-├── exeption/               # Exceções e tratamento global
-├── pessoas/
+├── auth/                   # Cadastro público, sessão e autenticação
+├── config/                 # Segurança, CORS e inicialização
+├── minhaconta/             # Dados e sugestões do visitante autenticado
+├── pessoa/
 │   ├── controller/         # Endpoints de pessoas
 │   ├── dto/                # Dados recebidos pela API
 │   ├── model/              # Entidade JPA Pessoa
 │   ├── repository/         # Acesso ao banco de dados
 │   └── service/            # Regras de negócio
-└── tipoAcesso/
+├── tipoacesso/
     ├── controller/         # Endpoints de tipos de acesso
     ├── dto/                # Objetos de entrada e saída
     ├── repository/         # Acesso ao banco de dados
-    └── service/            # Regras de negócio
+│   └── service/            # Regras de negócio
+└── usuario/                # Contas, perfis e administração de acessos
 ```
 
 O fluxo principal de uma requisição é:
@@ -95,15 +109,18 @@ CREATE DATABASE cadastro_pessoas_db
   COLLATE utf8mb4_unicode_ci;
 ```
 
-### 3. Configurar a conexão
+### 3. Configurar a conexão e o primeiro administrador
 
-Atualize `src/main/resources/application.properties` com as credenciais da sua instalação do MySQL:
+As credenciais não ficam gravadas no repositório. No PowerShell, informe as variáveis antes de iniciar:
 
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/cadastro_pessoas_db?useSSL=false&serverTimezone=America/Sao_Paulo&allowPublicKeyRetrieval=true
-spring.datasource.username=seu_usuario
-spring.datasource.password=sua_senha
+```powershell
+$env:DB_USERNAME = "root"
+$env:DB_PASSWORD = "sua_senha_do_mysql"
+$env:APP_ADMIN_EMAIL = "admin@exemplo.com"
+$env:APP_ADMIN_PASSWORD = "uma_senha_com_8_ou_mais_caracteres"
 ```
+
+O primeiro administrador é criado somente se ainda não existir nenhuma conta `ADMIN`. Depois disso, as contas de administrador e operador são gerenciadas pela tela de usuários.
 
 O Hibernate está configurado com `ddl-auto=update`, portanto as tabelas são criadas ou atualizadas quando a aplicação inicia.
 
@@ -127,6 +144,30 @@ A API ficará disponível em:
 ```text
 http://localhost:8080
 ```
+
+## Permissões
+
+| Ação | Visitante | Operador | Administrador |
+|---|---:|---:|---:|
+| Consultar os próprios dados | Sim | — | — |
+| Enviar e acompanhar as próprias sugestões | Sim | — | — |
+| Gerenciar pessoas e sugestões | Não | Sim | Sim |
+| Excluir dados permanentemente | Não | Não | Sim |
+| Gerenciar contas e perfis | Não | Não | Sim |
+
+## Endpoints de autenticação
+
+| Método | Rota | Acesso |
+|---|---|---|
+| `GET` | `/api/auth/csrf` | Público |
+| `POST` | `/api/auth/cadastro` | Público; sempre cria visitante |
+| `POST` | `/api/auth/login` | Público |
+| `POST` | `/api/auth/logout` | Autenticado |
+| `GET` | `/api/auth/me` | Autenticado |
+| `GET` | `/api/minha-conta` | Visitante |
+| `GET` | `/api/minha-conta/sugestoes` | Visitante |
+| `POST` | `/api/minha-conta/sugestoes` | Visitante |
+| `GET/POST/PATCH/PUT` | `/api/usuarios/**` | Administrador |
 
 ## Endpoints de pessoas
 
@@ -241,13 +282,13 @@ Recursos inexistentes retornam `404 Not Found`:
 
 ## Integração com frontend
 
-O CORS está configurado para permitir requisições do frontend executado em:
+O CORS está configurado para permitir credenciais do frontend executado em:
 
 ```text
 http://localhost:5173
 ```
 
-São permitidos os métodos `GET`, `POST`, `PUT`, `PATCH` e `DELETE`.
+Para alterar a origem, use `APP_FRONTEND_ORIGIN`. Em produção, execute frontend e backend com HTTPS e defina `SESSION_COOKIE_SECURE=true`.
 
 ## Testes e build
 
@@ -256,6 +297,8 @@ Executar os testes:
 ```powershell
 .\mvnw.cmd test
 ```
+
+Os testes usam um banco H2 temporário e não alteram o banco MySQL local.
 
 Gerar o pacote da aplicação:
 
@@ -268,11 +311,8 @@ O arquivo `.jar` será gerado na pasta `target/`.
 ## Próximas melhorias
 
 - Documentação interativa com Swagger/OpenAPI.
-- Autenticação e autorização com Spring Security e JWT.
 - Paginação e ordenação da listagem de pessoas.
-- Testes unitários e de integração para controllers e services.
 - Migrations do banco com Flyway ou Liquibase.
-- Variáveis de ambiente para credenciais e configurações sensíveis.
 
 ## Autor
 

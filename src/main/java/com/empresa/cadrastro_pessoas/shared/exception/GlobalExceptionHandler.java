@@ -3,6 +3,7 @@ package com.empresa.cadrastro_pessoas.shared.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +26,16 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleBusiness(
             BusinessException ex) {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleDataIntegrity(
+            DataIntegrityViolationException ex) {
+        log.warn("Conflito de integridade ao salvar dados", ex);
+        return buildResponse(
+                HttpStatus.CONFLICT,
+                "Já existe um cadastro com os dados únicos informados."
+        );
     }
 
     // Validação de campos (@Valid) -> 400 com lista de erros

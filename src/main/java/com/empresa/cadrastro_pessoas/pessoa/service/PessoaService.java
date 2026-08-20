@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -74,18 +75,20 @@ public class PessoaService {
 
     @Transactional
     public Pessoa cadastrar(PessoaRequest dto) {
+        String email = normalizarEmail(dto.getEmail());
         if (pessoaRepository.existsByCpf(dto.getCpf())) {
             throw new BusinessException("CPF já cadastrado: " + dto.getCpf());
         }
 
-        if (pessoaRepository.existsByEmail(dto.getEmail())) {
-            throw new BusinessException("E-mail já cadastrado: " + dto.getEmail());
+        if (pessoaRepository.existsByEmailIgnoreCase(email)
+                || usuarioRepository.existsByEmailIgnoreCase(email)) {
+            throw new BusinessException("E-mail já cadastrado: " + email);
         }
 
         Pessoa pessoa = Pessoa.builder()
                 .nome(dto.getNome())
                 .cpf(dto.getCpf())
-                .email(dto.getEmail())
+                .email(email)
                 .telefone(normalizarTelefone(dto.getTelefone()))
                 .dataNascimento(dto.getDataNascimento())
                 .endereco(dto.getEndereco())
@@ -113,6 +116,7 @@ public class PessoaService {
     @Transactional
     public Pessoa atualizar(Long id, PessoaRequest dto) {
         Pessoa pessoa = buscarEntidadePorId(id);
+        String email = normalizarEmail(dto.getEmail());
 
         pessoaRepository.findByCpf(dto.getCpf())
                 .ifPresent(outra -> {
@@ -121,16 +125,23 @@ public class PessoaService {
                     }
                 });
 
-        pessoaRepository.findByEmail(dto.getEmail())
+        pessoaRepository.findByEmailIgnoreCase(email)
                 .ifPresent(outra -> {
                     if (!outra.getId().equals(id)) {
                         throw new BusinessException("E-mail já cadastrado para outra pessoa.");
                     }
                 });
 
+        usuarioRepository.findByEmailIgnoreCase(email)
+                .ifPresent(usuario -> {
+                    if (usuario.getPessoa() == null || !usuario.getPessoa().getId().equals(id)) {
+                        throw new BusinessException("E-mail já pertence a outra conta de acesso.");
+                    }
+                });
+
         pessoa.setNome(dto.getNome());
         pessoa.setCpf(dto.getCpf());
-        pessoa.setEmail(dto.getEmail());
+        pessoa.setEmail(email);
         pessoa.setTelefone(normalizarTelefone(dto.getTelefone()));
         pessoa.setDataNascimento(dto.getDataNascimento());
         pessoa.setEndereco(dto.getEndereco());
@@ -200,5 +211,9 @@ public class PessoaService {
             throw new BusinessException("Telefone deve ter 10 ou 11 digitos.");
         }
         return numeros;
+    }
+
+    private String normalizarEmail(String email) {
+        return email.trim().toLowerCase(Locale.ROOT);
     }
 }

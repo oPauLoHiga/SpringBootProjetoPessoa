@@ -12,7 +12,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/sugestoes")
-@CrossOrigin(origins = "http://localhost:5173")
 public class SugestaoController {
 
     private final SugestaoService service;

@@ -51,13 +51,18 @@ public class SugestaoService {
     }
     @Transactional
     public SugestaoResponse criar(SugestaoRequest req) {
-        Pessoa pessoa = pessoaRepository.findById(req.getPessoaId())
+        return criarParaPessoa(req.getPessoaId(), req.getTitulo(), req.getDescricao());
+    }
+
+    @Transactional
+    public SugestaoResponse criarParaPessoa(Long pessoaId, String titulo, String descricao) {
+        Pessoa pessoa = pessoaRepository.findById(pessoaId)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Pessoa não encontrada: " + req.getPessoaId()));
+                        "Pessoa não encontrada: " + pessoaId));
 
         Sugestao sugestao = new Sugestao();
-        sugestao.setTitulo(req.getTitulo());
-        sugestao.setDescricao(req.getDescricao());
+        sugestao.setTitulo(titulo.trim());
+        sugestao.setDescricao(descricao.trim());
         sugestao.setPessoa(pessoa);
         // status inicia como PENDENTE (definido como default na entidade)
 

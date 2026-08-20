@@ -1,6 +1,7 @@
 package com.empresa.cadrastro_pessoas.shared.exception;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -47,5 +48,18 @@ class GlobalExceptionHandlerTest {
                 .containsEntry("status", 500)
                 .containsEntry("message", "Ocorreu um erro interno inesperado.");
         assertThat(response.getBody().toString()).doesNotContain("detalhe sensível");
+    }
+
+    @Test
+    void naoDeveExporDetalheDoBancoEmConflitoDeDados() {
+        ResponseEntity<Map<String, Object>> response = handler.handleDataIntegrity(
+                new DataIntegrityViolationException("nome interno da restrição")
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(response.getBody())
+                .containsEntry("status", 409)
+                .containsEntry("message", "Já existe um cadastro com os dados únicos informados.");
+        assertThat(response.getBody().toString()).doesNotContain("nome interno da restrição");
     }
 }
