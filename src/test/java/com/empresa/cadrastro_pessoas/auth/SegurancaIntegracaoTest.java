@@ -69,6 +69,10 @@ class SegurancaIntegracaoTest {
                         .with(user("operador@teste.com").roles("OPERADOR"))
                         .with(csrf()))
                 .andExpect(status().isForbidden());
+
+        mockMvc.perform(get("/api/tipos-acesso")
+                        .with(user("operador@teste.com").roles("OPERADOR")))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -133,6 +137,34 @@ class SegurancaIntegracaoTest {
     }
 
     @Test
+    void mudancaDePerfilDeveValerNaSessaoExistente() throws Exception {
+        Usuario usuario = salvarUsuario("equipe@exemplo.com", "SenhaSegura123", Perfil.OPERADOR, null);
+        MockHttpSession sessao = autenticar(usuario.getEmail(), "SenhaSegura123");
+
+        mockMvc.perform(get("/api/usuarios").session(sessao))
+                .andExpect(status().isForbidden());
+
+        usuario.setPerfil(Perfil.ADMIN);
+        usuarioRepository.saveAndFlush(usuario);
+
+        mockMvc.perform(get("/api/usuarios").session(sessao))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void contaDesativadaDevePerderAcessoNaSessaoExistente() throws Exception {
+        Usuario usuario = salvarUsuario("desativado@exemplo.com", "SenhaSegura123", Perfil.OPERADOR, null);
+        MockHttpSession sessao = autenticar(usuario.getEmail(), "SenhaSegura123");
+
+        usuario.setAtivo(false);
+        usuarioRepository.saveAndFlush(usuario);
+
+        mockMvc.perform(get("/api/pessoas").session(sessao))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Sua sessão não é mais válida."));
+    }
+
+    @Test
     void visitanteDeveCriarSugestaoSomenteParaPessoaVinculada() throws Exception {
         TipoAcesso tipo = tipoAcessoRepository.findByNomeIgnoreCase("Visitante").orElseThrow();
         Pessoa pessoa = pessoaRepository.save(Pessoa.builder()
@@ -176,5 +208,16 @@ class SegurancaIntegracaoTest {
                 .ativo(true)
                 .pessoa(pessoa)
                 .build());
+    }
+
+    private MockHttpSession autenticar(String email, String senha) throws Exception {
+        var resultadoLogin = mockMvc.perform(post("/api/auth/login")
+                        .with(csrf())
+                        .param("email", email)
+                        .param("senha", senha))
+                .andExpect(status().isNoContent())
+                .andReturn();
+
+        return (MockHttpSession) resultadoLogin.getRequest().getSession(false);
     }
 }

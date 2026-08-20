@@ -124,6 +124,17 @@ O primeiro administrador é criado somente se ainda não existir nenhuma conta `
 
 O Hibernate está configurado com `ddl-auto=update`, portanto as tabelas são criadas ou atualizadas quando a aplicação inicia.
 
+Em produção, informe também a origem pública do frontend e proteja o cookie com HTTPS:
+
+```powershell
+$env:APP_FRONTEND_ORIGIN = "https://seu-frontend.com"
+$env:SESSION_COOKIE_SECURE = "true"
+```
+
+Se frontend e backend estiverem em sites diferentes, configure ainda
+`SESSION_COOKIE_SAME_SITE=none`. Em ambiente local, os valores padrão já atendem
+`http://localhost:5173`.
+
 ### 4. Iniciar a aplicação
 
 No Windows:
