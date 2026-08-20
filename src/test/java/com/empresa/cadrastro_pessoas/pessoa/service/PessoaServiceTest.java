@@ -1,6 +1,9 @@
 package com.empresa.cadrastro_pessoas.pessoa.service;
 
+import com.empresa.cadrastro_pessoas.pessoa.dto.PessoaExclusaoResponse;
+import com.empresa.cadrastro_pessoas.pessoa.model.Pessoa;
 import com.empresa.cadrastro_pessoas.pessoa.repository.PessoaRepository;
+import com.empresa.cadrastro_pessoas.sugestao.repository.SugestaoRepository;
 import com.empresa.cadrastro_pessoas.tipoacesso.repository.TipoAcessoRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,9 +12,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PessoaServiceTest {
@@ -22,6 +26,9 @@ class PessoaServiceTest {
     @Mock
     private TipoAcessoRepository tipoAcessoRepository;
 
+    @Mock
+    private SugestaoRepository sugestaoRepository;
+
     @InjectMocks
     private PessoaService pessoaService;
 
@@ -30,5 +37,34 @@ class PessoaServiceTest {
         when(pessoaRepository.findAll()).thenReturn(List.of());
 
         assertThat(pessoaService.listarTodas()).isEmpty();
+    }
+
+    @Test
+    void deveInformarQuantasSugestoesSeraoExcluidas() {
+        Pessoa pessoa = Pessoa.builder().id(1L).nome("Maria").build();
+        when(pessoaRepository.findById(1L)).thenReturn(Optional.of(pessoa));
+        when(sugestaoRepository.countByPessoaId(1L)).thenReturn(2L);
+
+        PessoaExclusaoResponse resumo = pessoaService.obterResumoExclusao(1L);
+
+        assertThat(resumo.id()).isEqualTo(1L);
+        assertThat(resumo.nome()).isEqualTo("Maria");
+        assertThat(resumo.totalSugestoes()).isEqualTo(2L);
+        verifyNoInteractions(tipoAcessoRepository);
+    }
+
+    @Test
+    void deveExcluirSugestoesAntesDeExcluirPessoa() {
+        Pessoa pessoa = Pessoa.builder().id(1L).nome("Maria").build();
+        when(pessoaRepository.findById(1L)).thenReturn(Optional.of(pessoa));
+        when(sugestaoRepository.countByPessoaId(1L)).thenReturn(2L);
+
+        PessoaExclusaoResponse resultado = pessoaService.excluir(1L);
+
+        assertThat(resultado.totalSugestoes()).isEqualTo(2L);
+
+        var ordem = inOrder(sugestaoRepository, pessoaRepository);
+        ordem.verify(sugestaoRepository).deleteByPessoaId(1L);
+        ordem.verify(pessoaRepository).delete(pessoa);
     }
 }

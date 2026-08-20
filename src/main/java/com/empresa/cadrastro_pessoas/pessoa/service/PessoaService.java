@@ -2,10 +2,12 @@ package com.empresa.cadrastro_pessoas.pessoa.service;
 
 import com.empresa.cadrastro_pessoas.shared.exception.BusinessException;
 import com.empresa.cadrastro_pessoas.shared.exception.ResourceNotFoundException;
+import com.empresa.cadrastro_pessoas.pessoa.dto.PessoaExclusaoResponse;
 import com.empresa.cadrastro_pessoas.pessoa.dto.PessoaRequest;
 import com.empresa.cadrastro_pessoas.pessoa.dto.PessoaResponse;
 import com.empresa.cadrastro_pessoas.pessoa.model.Pessoa;
 import com.empresa.cadrastro_pessoas.pessoa.repository.PessoaRepository;
+import com.empresa.cadrastro_pessoas.sugestao.repository.SugestaoRepository;
 import com.empresa.cadrastro_pessoas.tipoacesso.TipoAcesso;
 import com.empresa.cadrastro_pessoas.tipoacesso.repository.TipoAcessoRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ public class PessoaService {
 
     private final PessoaRepository pessoaRepository;
     private final TipoAcessoRepository tipoAcessoRepository;
+    private final SugestaoRepository sugestaoRepository;
 
     @Transactional(readOnly = true)
     public List<PessoaResponse> listarTodas() {
@@ -156,11 +159,30 @@ public class PessoaService {
         pessoaRepository.save(pessoa);
     }
 
-    @Transactional
-    public Pessoa excluir(Long id) {
+    @Transactional(readOnly = true)
+    public PessoaExclusaoResponse obterResumoExclusao(Long id) {
         Pessoa pessoa = buscarEntidadePorId(id);
+        return criarResumoExclusao(pessoa);
+    }
+
+    @Transactional
+    public PessoaExclusaoResponse excluir(Long id) {
+        Pessoa pessoa = buscarEntidadePorId(id);
+        PessoaExclusaoResponse resumo = criarResumoExclusao(pessoa);
+
+        sugestaoRepository.deleteByPessoaId(id);
         pessoaRepository.delete(pessoa);
-        return pessoa;
+
+        return resumo;
+    }
+
+    private PessoaExclusaoResponse criarResumoExclusao(Pessoa pessoa) {
+        long totalSugestoes = sugestaoRepository.countByPessoaId(pessoa.getId());
+        return new PessoaExclusaoResponse(
+                pessoa.getId(),
+                pessoa.getNome(),
+                totalSugestoes
+        );
     }
 
     private String normalizarTelefone(String telefone) {

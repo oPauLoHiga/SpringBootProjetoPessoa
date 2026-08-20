@@ -1,5 +1,6 @@
 package com.empresa.cadrastro_pessoas.pessoa.controller;
 
+import com.empresa.cadrastro_pessoas.pessoa.dto.PessoaExclusaoResponse;
 import com.empresa.cadrastro_pessoas.pessoa.dto.PessoaRequest;
 import com.empresa.cadrastro_pessoas.pessoa.dto.PessoaResponse;
 import com.empresa.cadrastro_pessoas.pessoa.model.Pessoa;
@@ -71,10 +72,15 @@ public class PessoaController {
         return modificar(id);
     }
 
+    @GetMapping("/{id}/resumo-exclusao")
+    public ResponseEntity<PessoaExclusaoResponse> obterResumoExclusao(
+            @PathVariable Long id) {
+        return ResponseEntity.ok(pessoaService.obterResumoExclusao(id));
+    }
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> excluir(@PathVariable Long id) {
-        Pessoa excluido = pessoaService.excluir(id);
-        return ResponseEntity.ok(excluido.getNome() + " excluido(a) com sucesso!");
+    public ResponseEntity<PessoaExclusaoResponse> excluir(@PathVariable Long id) {
+        return ResponseEntity.ok(pessoaService.excluir(id));
     }
 
     private ResponseEntity<String> modificar(Long id) {
