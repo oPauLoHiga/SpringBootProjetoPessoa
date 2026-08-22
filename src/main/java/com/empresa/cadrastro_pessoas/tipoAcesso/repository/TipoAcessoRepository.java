@@ -12,7 +12,7 @@ public interface TipoAcessoRepository extends JpaRepository<TipoAcesso, Long> {
 
     Optional<TipoAcesso> findByNomeIgnoreCase(String nome);
 
-    List<TipoAcesso> findByAtivoTrue();
+    List<TipoAcesso> findByAtivoTrueOrderByNomeAsc();
 
     boolean existsByNomeIgnoreCase(String nome);
 }

@@ -23,7 +23,8 @@ public class TelefonePadraoInitializer implements CommandLineRunner {
 
             String numeros = telefone.replaceAll("\\D", "");
             if (numeros.length() != 10 && numeros.length() != 11) {
-                numeros = String.format("119%08d", pessoa.getId());
+                pessoa.setTelefone(null);
+                continue;
             }
             pessoa.setTelefone(numeros);
         }

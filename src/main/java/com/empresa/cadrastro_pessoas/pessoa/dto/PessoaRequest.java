@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @Builder
 public class PessoaRequest {
 
-    @NotBlank
+    @NotBlank(message = "Nome é obrigatório")
     @Size(min = 2, max = 100, message = "Nome deve ter entre 2 e 100 caracteres")
     private String nome;
 
@@ -24,18 +24,23 @@ public class PessoaRequest {
 
     @NotBlank(message = "E-mail é obrigatório")
     @Email(message = "E-mail inválido")
+    @Size(max = 150, message = "E-mail deve ter no máximo 150 caracteres")
     private String email;
 
+    @Size(max = 20, message = "Telefone deve ter no máximo 20 caracteres")
     private String telefone;
 
     @NotNull(message = "Data de nascimento é obrigatória")
     @Past(message = "Data de nascimento deve ser no passado")
     private LocalDate dataNascimento;
 
+    @Size(max = 255, message = "Endereço deve ter no máximo 255 caracteres")
     private String endereco;
+
+    @Size(max = 100, message = "Cidade deve ter no máximo 100 caracteres")
     private String cidade;
 
-    @Size(max = 2, message = "Estado deve ter 2 caracteres (sigla)")
+    @Pattern(regexp = "^$|[A-Za-z]{2}", message = "Estado deve conter uma sigla de 2 letras")
     private String estado;
 
     private Long tipoAcessoId;

@@ -3,6 +3,7 @@ package com.empresa.cadrastro_pessoas.config;
 import com.empresa.cadrastro_pessoas.usuario.Perfil;
 import com.empresa.cadrastro_pessoas.usuario.model.Usuario;
 import com.empresa.cadrastro_pessoas.usuario.repository.UsuarioRepository;
+import com.empresa.cadrastro_pessoas.pessoa.repository.PessoaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +20,7 @@ import java.util.Locale;
 public class AdminInicialInitializer implements CommandLineRunner {
 
     private final UsuarioRepository usuarioRepository;
+    private final PessoaRepository pessoaRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Value("${app.admin.email:}")
@@ -42,8 +44,9 @@ public class AdminInicialInitializer implements CommandLineRunner {
         }
 
         String emailNormalizado = email.trim().toLowerCase(Locale.ROOT);
-        if (usuarioRepository.existsByEmailIgnoreCase(emailNormalizado)) {
-            throw new IllegalStateException("APP_ADMIN_EMAIL já pertence a outra conta.");
+        if (usuarioRepository.existsByEmailIgnoreCase(emailNormalizado)
+                || pessoaRepository.existsByEmailIgnoreCase(emailNormalizado)) {
+            throw new IllegalStateException("APP_ADMIN_EMAIL já pertence a outro cadastro.");
         }
 
         usuarioRepository.save(Usuario.builder()

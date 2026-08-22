@@ -78,6 +78,9 @@ public class UsuarioService {
     @Transactional
     public UsuarioResponse ativar(Long id) {
         Usuario usuario = buscar(id);
+        if (usuario.getPessoa() != null && !Boolean.TRUE.equals(usuario.getPessoa().getAtivo())) {
+            throw new BusinessException("Ative primeiro o cadastro da pessoa vinculada.");
+        }
         usuario.setAtivo(true);
         return UsuarioResponse.de(usuarioRepository.save(usuario));
     }

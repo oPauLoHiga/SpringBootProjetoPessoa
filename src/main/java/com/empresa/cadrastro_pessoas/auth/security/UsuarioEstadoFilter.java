@@ -15,6 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -35,16 +36,18 @@ public class UsuarioEstadoFilter extends OncePerRequestFilter {
                 && autenticacao.getPrincipal() instanceof UsuarioPrincipal principal) {
             var usuarioAtual = usuarioRepository.findByIdComPessoa(principal.id()).orElse(null);
 
-            if (usuarioAtual == null || !Boolean.TRUE.equals(usuarioAtual.getAtivo())) {
-                SecurityContextHolder.clearContext();
-                if (request.getSession(false) != null) {
-                    request.getSession(false).invalidate();
-                }
+            UsuarioPrincipal principalAtualizado = usuarioAtual == null
+                    ? null
+                    : UsuarioPrincipal.de(usuarioAtual);
+
+            boolean senhaAlterada = principalAtualizado != null
+                    && !Objects.equals(principalAtualizado.senhaHash(), principal.senhaHash());
+            if (principalAtualizado == null || !principalAtualizado.isEnabled() || senhaAlterada) {
+                invalidarSessao(request);
                 escreverNaoAutorizado(response);
                 return;
             }
 
-            UsuarioPrincipal principalAtualizado = UsuarioPrincipal.de(usuarioAtual);
             if (!principalAtualizado.equals(principal)) {
                 var novaAutenticacao = UsernamePasswordAuthenticationToken.authenticated(
                         principalAtualizado,
@@ -57,6 +60,13 @@ public class UsuarioEstadoFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void invalidarSessao(HttpServletRequest request) {
+        SecurityContextHolder.clearContext();
+        if (request.getSession(false) != null) {
+            request.getSession(false).invalidate();
+        }
     }
 
     private void escreverNaoAutorizado(HttpServletResponse response) throws IOException {

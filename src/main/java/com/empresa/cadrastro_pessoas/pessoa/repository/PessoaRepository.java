@@ -24,11 +24,11 @@ public interface PessoaRepository extends JpaRepository<Pessoa, Long> {
 
         boolean existsByEmailIgnoreCase(String email);
 
-        List<Pessoa> findByAtivoTrue();
+        List<Pessoa> findByAtivoTrueOrderByNomeAsc();
 
         List<Pessoa> findByTipoAcessoIsNull();
 
-        List<Pessoa> findByNomeContainingIgnoreCase(String nome);
+        List<Pessoa> findByNomeContainingIgnoreCaseOrderByNomeAsc(String nome);
 
         List<Pessoa> findByCidadeIgnoreCase(String cidade);
 

@@ -8,10 +8,13 @@ import com.empresa.cadrastro_pessoas.tipoacesso.dto.TipoAcessoResponse;
 import com.empresa.cadrastro_pessoas.tipoacesso.repository.TipoAcessoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Sort;
 import java.util.List;
 
 @Service
 public class TipoAcessoService {
+
+    private static final String TIPO_PADRAO = "Visitante";
 
     private final TipoAcessoRepository repository;
 
@@ -19,20 +22,23 @@ public class TipoAcessoService {
         this.repository = repository;
     }
 
+    @Transactional(readOnly = true)
     public List<TipoAcessoResponse> listarTodos() {
-        return repository.findAll()
+        return repository.findAll(Sort.by(Sort.Direction.ASC, "nome"))
                 .stream()
                 .map(TipoAcessoResponse::de)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<TipoAcessoResponse> listarAtivos() {
-        return repository.findByAtivoTrue()
+        return repository.findByAtivoTrueOrderByNomeAsc()
                 .stream()
                 .map(TipoAcessoResponse::de)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public TipoAcessoResponse buscarPorId(Long id) {
         TipoAcesso tipo = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tipo de acesso não encontrado: " + id));
@@ -41,10 +47,11 @@ public class TipoAcessoService {
 
     @Transactional
     public TipoAcessoResponse criar(TipoAcessoRequest req) {
-        if (repository.existsByNomeIgnoreCase(req.getNome())) {
-            throw new BusinessException("Já existe um tipo de acesso com o nome: " + req.getNome());
+        String nome = req.getNome().trim();
+        if (repository.existsByNomeIgnoreCase(nome)) {
+            throw new BusinessException("Já existe um tipo de acesso com o nome: " + nome);
         }
-        TipoAcesso tipo = new TipoAcesso(req.getNome(), req.getDescricao());
+        TipoAcesso tipo = new TipoAcesso(nome, normalizarOpcional(req.getDescricao()));
         return TipoAcessoResponse.de(repository.save(tipo));
     }
 
@@ -52,8 +59,17 @@ public class TipoAcessoService {
     public TipoAcessoResponse atualizar(Long id, TipoAcessoRequest req) {
         TipoAcesso tipo = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tipo de acesso não encontrado: " + id));
-        tipo.setNome(req.getNome());
-        tipo.setDescricao(req.getDescricao());
+        String nome = req.getNome().trim();
+        if (ehTipoPadrao(tipo) && !TIPO_PADRAO.equalsIgnoreCase(nome)) {
+            throw new BusinessException("O tipo Visitante é obrigatório e não pode ser renomeado.");
+        }
+        repository.findByNomeIgnoreCase(nome).ifPresent(outro -> {
+            if (!outro.getId().equals(id)) {
+                throw new BusinessException("Já existe um tipo de acesso com o nome: " + nome);
+            }
+        });
+        tipo.setNome(nome);
+        tipo.setDescricao(normalizarOpcional(req.getDescricao()));
         return TipoAcessoResponse.de(repository.save(tipo));
     }
 
@@ -61,6 +77,9 @@ public class TipoAcessoService {
     public void desativar(Long id) {
         TipoAcesso tipo = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tipo de acesso não encontrado: " + id));
+        if (ehTipoPadrao(tipo)) {
+            throw new BusinessException("O tipo Visitante é obrigatório e não pode ser desativado.");
+        }
         tipo.setAtivo(false);
         repository.save(tipo);
     }
@@ -75,9 +94,22 @@ public class TipoAcessoService {
 
     @Transactional
     public void excluir(Long id) {
-        if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("Tipo de acesso não encontrado: " + id);
+        TipoAcesso tipo = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Tipo de acesso não encontrado: " + id));
+        if (ehTipoPadrao(tipo)) {
+            throw new BusinessException("O tipo Visitante é obrigatório e não pode ser excluído.");
         }
-        repository.deleteById(id);
+        if (tipo.getPessoas() != null && !tipo.getPessoas().isEmpty()) {
+            throw new BusinessException("Não é possível excluir um tipo vinculado a pessoas.");
+        }
+        repository.delete(tipo);
+    }
+
+    private boolean ehTipoPadrao(TipoAcesso tipo) {
+        return TIPO_PADRAO.equalsIgnoreCase(tipo.getNome());
+    }
+
+    private String normalizarOpcional(String valor) {
+        return valor == null || valor.isBlank() ? null : valor.trim();
     }
 }

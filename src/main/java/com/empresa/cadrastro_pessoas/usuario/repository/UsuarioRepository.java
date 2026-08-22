@@ -20,6 +20,9 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     @Query("select u from Usuario u where u.id = :id")
     Optional<Usuario> findByIdComPessoa(@Param("id") Long id);
 
+    @EntityGraph(attributePaths = "pessoa")
+    Optional<Usuario> findByPessoaId(Long pessoaId);
+
     boolean existsByEmailIgnoreCase(String email);
 
     boolean existsByPessoaId(Long pessoaId);

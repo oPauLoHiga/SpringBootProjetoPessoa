@@ -14,10 +14,12 @@ import java.util.List;
 public interface SugestaoRepository extends JpaRepository<Sugestao, Long> {
 
     // Todas as sugestões de uma pessoa específica
-    List<Sugestao> findByPessoaId(Long pessoaId);
+    List<Sugestao> findByPessoaIdOrderByDataCriacaoDesc(Long pessoaId);
 
     // Filtrar sugestões por status
-    List<Sugestao> findByStatus(StatusSugestao status);
+    List<Sugestao> findByStatusOrderByDataCriacaoDesc(StatusSugestao status);
+
+    List<Sugestao> findAllByOrderByDataCriacaoDesc();
 
     // Sugestões de uma pessoa com status específico
     List<Sugestao> findByPessoaIdAndStatus(Long pessoaId, StatusSugestao status);

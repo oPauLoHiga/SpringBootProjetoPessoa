@@ -5,9 +5,11 @@ import com.empresa.cadrastro_pessoas.pessoa.dto.PessoaRequest;
 import com.empresa.cadrastro_pessoas.pessoa.dto.PessoaResponse;
 import com.empresa.cadrastro_pessoas.pessoa.model.Pessoa;
 import com.empresa.cadrastro_pessoas.pessoa.service.PessoaService;
+import com.empresa.cadrastro_pessoas.auth.security.UsuarioPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -61,8 +63,11 @@ public class PessoaController {
     }
 
     @PatchMapping("/{id}/desativar")
-    public ResponseEntity<String> desativar(@PathVariable Long id) {
-        pessoaService.desativar(id);
+    public ResponseEntity<String> desativar(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UsuarioPrincipal usuarioAtual
+    ) {
+        pessoaService.desativar(id, usuarioAtual.id());
         return modificar(id);
     }
 
@@ -79,8 +84,11 @@ public class PessoaController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<PessoaExclusaoResponse> excluir(@PathVariable Long id) {
-        return ResponseEntity.ok(pessoaService.excluir(id));
+    public ResponseEntity<PessoaExclusaoResponse> excluir(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UsuarioPrincipal usuarioAtual
+    ) {
+        return ResponseEntity.ok(pessoaService.excluir(id, usuarioAtual.id()));
     }
 
     private ResponseEntity<String> modificar(Long id) {

@@ -10,18 +10,24 @@ public record UsuarioResponse(
         String email,
         Perfil perfil,
         boolean ativo,
+        boolean acessoLiberado,
         Long pessoaId,
         String pessoaNome,
+        Boolean pessoaAtiva,
         LocalDateTime criadoEm
 ) {
     public static UsuarioResponse de(Usuario usuario) {
+        boolean pessoaAtiva = usuario.getPessoa() == null
+                || Boolean.TRUE.equals(usuario.getPessoa().getAtivo());
         return new UsuarioResponse(
                 usuario.getId(),
                 usuario.getEmail(),
                 usuario.getPerfil(),
                 Boolean.TRUE.equals(usuario.getAtivo()),
+                Boolean.TRUE.equals(usuario.getAtivo()) && pessoaAtiva,
                 usuario.getPessoa() == null ? null : usuario.getPessoa().getId(),
                 usuario.getPessoa() == null ? null : usuario.getPessoa().getNome(),
+                usuario.getPessoa() == null ? null : pessoaAtiva,
                 usuario.getCriadoEm()
         );
     }

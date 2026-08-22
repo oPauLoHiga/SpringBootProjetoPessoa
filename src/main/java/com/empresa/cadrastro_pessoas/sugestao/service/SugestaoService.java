@@ -3,6 +3,7 @@ package com.empresa.cadrastro_pessoas.sugestao.service;
 import com.empresa.cadrastro_pessoas.pessoa.model.Pessoa;
 import com.empresa.cadrastro_pessoas.pessoa.repository.PessoaRepository;
 import com.empresa.cadrastro_pessoas.shared.exception.ResourceNotFoundException;
+import com.empresa.cadrastro_pessoas.shared.exception.BusinessException;
 import com.empresa.cadrastro_pessoas.sugestao.*;
 import com.empresa.cadrastro_pessoas.sugestao.dto.SugestaoRequest;
 import com.empresa.cadrastro_pessoas.sugestao.dto.SugestaoResponse;
@@ -27,19 +28,19 @@ public class SugestaoService {
 
     @Transactional(readOnly = true)
     public List<SugestaoResponse> listarTodas() {
-        return sugestaoRepository.findAll()
+        return sugestaoRepository.findAllByOrderByDataCriacaoDesc()
                 .stream().map(SugestaoResponse::de).toList();
     }
 
     @Transactional(readOnly = true)
     public List<SugestaoResponse> listarPorStatus(StatusSugestao status) {
-        return sugestaoRepository.findByStatus(status)
+        return sugestaoRepository.findByStatusOrderByDataCriacaoDesc(status)
                 .stream().map(SugestaoResponse::de).toList();
     }
 
     @Transactional(readOnly = true)
     public List<SugestaoResponse> listarPorPessoa(Long pessoaId) {
-        return sugestaoRepository.findByPessoaId(pessoaId)
+        return sugestaoRepository.findByPessoaIdOrderByDataCriacaoDesc(pessoaId)
                 .stream().map(SugestaoResponse::de).toList();
     }
 
@@ -59,6 +60,9 @@ public class SugestaoService {
         Pessoa pessoa = pessoaRepository.findById(pessoaId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Pessoa não encontrada: " + pessoaId));
+        if (!Boolean.TRUE.equals(pessoa.getAtivo())) {
+            throw new BusinessException("Não é possível criar sugestão para uma pessoa inativa.");
+        }
 
         Sugestao sugestao = new Sugestao();
         sugestao.setTitulo(titulo.trim());

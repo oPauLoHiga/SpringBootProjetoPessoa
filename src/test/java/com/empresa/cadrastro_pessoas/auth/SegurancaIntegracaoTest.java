@@ -165,6 +165,64 @@ class SegurancaIntegracaoTest {
     }
 
     @Test
+    void pessoaDesativadaDevePerderAcessoNaSessaoExistente() throws Exception {
+        Pessoa pessoa = salvarPessoa("Pessoa Operadora", "111.222.333-44", "pessoa.operadora@exemplo.com");
+        Usuario usuario = salvarUsuario(pessoa.getEmail(), "SenhaSegura123", Perfil.OPERADOR, pessoa);
+        MockHttpSession sessao = autenticar(usuario.getEmail(), "SenhaSegura123");
+
+        pessoa.setAtivo(false);
+        pessoaRepository.saveAndFlush(pessoa);
+
+        mockMvc.perform(get("/api/pessoas").session(sessao))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Sua sessão não é mais válida."));
+    }
+
+    @Test
+    void pessoaDesativadaNaoDeveConseguirEntrar() throws Exception {
+        Pessoa pessoa = salvarPessoa("Pessoa Inativa", "222.333.444-55", "pessoa.inativa@exemplo.com");
+        pessoa.setAtivo(false);
+        pessoaRepository.saveAndFlush(pessoa);
+        salvarUsuario(pessoa.getEmail(), "SenhaSegura123", Perfil.VISITANTE, pessoa);
+
+        mockMvc.perform(post("/api/auth/login")
+                        .with(csrf())
+                        .param("email", pessoa.getEmail())
+                        .param("senha", "SenhaSegura123"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void redefinicaoDeSenhaDeveInvalidarSessaoExistente() throws Exception {
+        Usuario usuario = salvarUsuario("senha@exemplo.com", "SenhaSegura123", Perfil.OPERADOR, null);
+        MockHttpSession sessao = autenticar(usuario.getEmail(), "SenhaSegura123");
+
+        usuario.setSenhaHash(passwordEncoder.encode("NovaSenhaSegura123"));
+        usuarioRepository.saveAndFlush(usuario);
+
+        mockMvc.perform(get("/api/pessoas").session(sessao))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Sua sessão não é mais válida."));
+    }
+
+    @Test
+    void requisicoesMalformadasDevemRetornarBadRequest() throws Exception {
+        mockMvc.perform(get("/api/sugestoes/por-status")
+                        .param("status", "DESCONHECIDO")
+                        .with(user("admin@teste.com").roles("ADMIN")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
+
+        mockMvc.perform(post("/api/sugestoes")
+                        .with(user("admin@teste.com").roles("ADMIN"))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
     void visitanteDeveCriarSugestaoSomenteParaPessoaVinculada() throws Exception {
         TipoAcesso tipo = tipoAcessoRepository.findByNomeIgnoreCase("Visitante").orElseThrow();
         Pessoa pessoa = pessoaRepository.save(Pessoa.builder()
@@ -207,6 +265,18 @@ class SegurancaIntegracaoTest {
                 .perfil(perfil)
                 .ativo(true)
                 .pessoa(pessoa)
+                .build());
+    }
+
+    private Pessoa salvarPessoa(String nome, String cpf, String email) {
+        TipoAcesso tipo = tipoAcessoRepository.findByNomeIgnoreCase("Visitante").orElseThrow();
+        return pessoaRepository.save(Pessoa.builder()
+                .nome(nome)
+                .cpf(cpf)
+                .email(email)
+                .dataNascimento(LocalDate.of(1990, 1, 1))
+                .ativo(true)
+                .tipoAcesso(tipo)
                 .build());
     }
 

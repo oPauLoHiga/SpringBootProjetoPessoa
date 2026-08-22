@@ -27,13 +27,15 @@ public record UsuarioPrincipal(
     public static UsuarioPrincipal de(Usuario usuario) {
         Long pessoaId = usuario.getPessoa() == null ? null : usuario.getPessoa().getId();
         String pessoaNome = usuario.getPessoa() == null ? null : usuario.getPessoa().getNome();
+        boolean pessoaAtiva = usuario.getPessoa() == null
+                || Boolean.TRUE.equals(usuario.getPessoa().getAtivo());
 
         return new UsuarioPrincipal(
                 usuario.getId(),
                 usuario.getEmail(),
                 usuario.getSenhaHash(),
                 usuario.getPerfil(),
-                Boolean.TRUE.equals(usuario.getAtivo()),
+                Boolean.TRUE.equals(usuario.getAtivo()) && pessoaAtiva,
                 pessoaId,
                 pessoaNome
         );

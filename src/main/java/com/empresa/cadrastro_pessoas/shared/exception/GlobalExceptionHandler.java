@@ -3,8 +3,12 @@ package com.empresa.cadrastro_pessoas.shared.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -49,9 +53,19 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", 400);
-        body.put("error", "Dados invalidos");
+        body.put("error", "Dados inválidos");
         body.put("messages", errors);
         return ResponseEntity.badRequest().body(body);
+    }
+
+    @ExceptionHandler({
+            HttpMessageNotReadableException.class,
+            MethodArgumentTypeMismatchException.class,
+            MissingServletRequestParameterException.class,
+            ConstraintViolationException.class
+    })
+    public ResponseEntity<Map<String, Object>> handleInvalidRequest(Exception ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, "Requisição inválida. Verifique os dados informados.");
     }
 
     // Erro genérico -> 500 sem expor detalhes internos ao cliente
