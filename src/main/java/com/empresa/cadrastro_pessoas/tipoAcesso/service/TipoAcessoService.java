@@ -8,7 +8,6 @@ import com.empresa.cadrastro_pessoas.tipoacesso.dto.TipoAcessoResponse;
 import com.empresa.cadrastro_pessoas.tipoacesso.repository.TipoAcessoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.domain.Sort;
 import java.util.List;
 
 @Service
@@ -24,18 +23,12 @@ public class TipoAcessoService {
 
     @Transactional(readOnly = true)
     public List<TipoAcessoResponse> listarTodos() {
-        return repository.findAll(Sort.by(Sort.Direction.ASC, "nome"))
-                .stream()
-                .map(TipoAcessoResponse::de)
-                .toList();
+        return repository.listarTodosComTotalPessoas();
     }
 
     @Transactional(readOnly = true)
     public List<TipoAcessoResponse> listarAtivos() {
-        return repository.findByAtivoTrueOrderByNomeAsc()
-                .stream()
-                .map(TipoAcessoResponse::de)
-                .toList();
+        return repository.listarAtivosComTotalPessoas();
     }
 
     @Transactional(readOnly = true)
@@ -47,7 +40,7 @@ public class TipoAcessoService {
 
     @Transactional
     public TipoAcessoResponse criar(TipoAcessoRequest req) {
-        String nome = req.getNome().trim();
+        String nome = normalizarNome(req.getNome());
         if (repository.existsByNomeIgnoreCase(nome)) {
             throw new BusinessException("Já existe um tipo de acesso com o nome: " + nome);
         }
@@ -59,7 +52,7 @@ public class TipoAcessoService {
     public TipoAcessoResponse atualizar(Long id, TipoAcessoRequest req) {
         TipoAcesso tipo = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tipo de acesso não encontrado: " + id));
-        String nome = req.getNome().trim();
+        String nome = normalizarNome(req.getNome());
         if (ehTipoPadrao(tipo) && !TIPO_PADRAO.equalsIgnoreCase(nome)) {
             throw new BusinessException("O tipo Visitante é obrigatório e não pode ser renomeado.");
         }
@@ -111,5 +104,13 @@ public class TipoAcessoService {
 
     private String normalizarOpcional(String valor) {
         return valor == null || valor.isBlank() ? null : valor.trim();
+    }
+
+    private String normalizarNome(String nome) {
+        String valor = nome == null ? "" : nome.trim();
+        if (valor.length() < 2) {
+            throw new BusinessException("Nome deve ter pelo menos 2 caracteres.");
+        }
+        return valor;
     }
 }

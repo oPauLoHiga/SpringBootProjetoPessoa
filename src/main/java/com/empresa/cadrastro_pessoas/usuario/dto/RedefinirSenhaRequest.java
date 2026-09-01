@@ -9,7 +9,7 @@ public record RedefinirSenhaRequest(
         String senha,
 
         @NotBlank(message = "Confirmação de senha é obrigatória")
-        @Size(max = 72, message = "Confirmação de senha deve ter no máximo 72 caracteres")
+        @Size(min = 8, max = 72, message = "Confirmação de senha deve ter entre 8 e 72 caracteres")
         String confirmacaoSenha
 ) {
 }

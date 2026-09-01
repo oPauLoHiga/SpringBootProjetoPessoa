@@ -116,6 +116,9 @@ As credenciais não ficam gravadas no repositório. No PowerShell, informe as va
 ```powershell
 $env:DB_USERNAME = "root"
 $env:DB_PASSWORD = "sua_senha_do_mysql"
+$env:DB_HOST = "localhost"
+$env:DB_PORT = "3306"
+$env:DB_NAME = "cadastro_pessoas_db"
 $env:APP_ADMIN_EMAIL = "admin@exemplo.com"
 $env:APP_ADMIN_PASSWORD = "uma_senha_com_8_ou_mais_caracteres"
 ```
@@ -129,11 +132,12 @@ Em produção, informe também a origem pública do frontend e proteja o cookie 
 ```powershell
 $env:APP_FRONTEND_ORIGIN = "https://seu-frontend.com"
 $env:SESSION_COOKIE_SECURE = "true"
+$env:SPRING_PROFILES_ACTIVE = "prod"
 ```
 
 Se frontend e backend estiverem em sites diferentes, configure ainda
 `SESSION_COOKIE_SAME_SITE=none`. Em ambiente local, os valores padrão já atendem
-`http://localhost:5173`.
+`http://localhost:5173` e `http://127.0.0.1:5173`.
 
 ### 4. Iniciar a aplicação
 
@@ -236,6 +240,7 @@ URL base: `/api/tipos-acesso`
 | `POST` | `/api/tipos-acesso` | Cadastra um tipo de acesso |
 | `PUT` | `/api/tipos-acesso/{id}` | Atualiza um tipo de acesso |
 | `PATCH` | `/api/tipos-acesso/{id}/desativar` | Desativa um tipo de acesso |
+| `PATCH` | `/api/tipos-acesso/{id}/ativar` | Ativa um tipo de acesso |
 | `DELETE` | `/api/tipos-acesso/{id}` | Exclui um tipo de acesso |
 
 ### Exemplo de cadastro
@@ -297,9 +302,12 @@ O CORS está configurado para permitir credenciais do frontend executado em:
 
 ```text
 http://localhost:5173
+http://127.0.0.1:5173
 ```
 
-Para alterar a origem, use `APP_FRONTEND_ORIGIN`. Em produção, execute frontend e backend com HTTPS e defina `SESSION_COOKIE_SECURE=true`.
+Para configurar uma origem, use `APP_FRONTEND_ORIGIN`. Para várias origens,
+use `APP_FRONTEND_ORIGINS` com os endereços separados por vírgula. Em produção,
+execute frontend e backend com HTTPS e defina `SESSION_COOKIE_SECURE=true`.
 
 ## Testes e build
 

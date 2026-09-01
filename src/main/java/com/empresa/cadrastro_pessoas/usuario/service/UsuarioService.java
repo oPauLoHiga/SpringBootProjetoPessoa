@@ -11,7 +11,6 @@ import com.empresa.cadrastro_pessoas.usuario.dto.UsuarioResponse;
 import com.empresa.cadrastro_pessoas.usuario.model.Usuario;
 import com.empresa.cadrastro_pessoas.usuario.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +28,7 @@ public class UsuarioService {
 
     @Transactional(readOnly = true)
     public List<UsuarioResponse> listar() {
-        return usuarioRepository.findAll(Sort.by(Sort.Direction.ASC, "email"))
+        return usuarioRepository.findAllByOrderByEmailAsc()
                 .stream()
                 .map(UsuarioResponse::de)
                 .toList();

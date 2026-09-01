@@ -10,7 +10,24 @@ public class TipoAcessoResponse {
     private String  nome;
     private String  descricao;
     private boolean ativo;
-    private int     totalPessoas;
+    private long    totalPessoas;
+
+    public TipoAcessoResponse(
+            Long id,
+            String nome,
+            String descricao,
+            boolean ativo,
+            long totalPessoas
+    ) {
+        this.id = id;
+        this.nome = nome;
+        this.descricao = descricao;
+        this.ativo = ativo;
+        this.totalPessoas = totalPessoas;
+    }
+
+    private TipoAcessoResponse() {
+    }
 
     public static TipoAcessoResponse de(TipoAcesso t) {
         TipoAcessoResponse r = new TipoAcessoResponse();

@@ -12,7 +12,6 @@ import com.empresa.cadrastro_pessoas.tipoacesso.TipoAcesso;
 import com.empresa.cadrastro_pessoas.tipoacesso.repository.TipoAcessoRepository;
 import com.empresa.cadrastro_pessoas.usuario.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +29,7 @@ public class PessoaService {
 
     @Transactional(readOnly = true)
     public List<PessoaResponse> listarTodas() {
-        return pessoaRepository.findAll(Sort.by(Sort.Direction.ASC, "nome"))
+        return pessoaRepository.findAllByOrderByNomeAsc()
                 .stream()
                 .map(PessoaResponse::de)
                 .toList();
@@ -79,7 +78,7 @@ public class PessoaService {
     }
 
     @Transactional
-    public Pessoa cadastrar(PessoaRequest dto) {
+    public PessoaResponse cadastrar(PessoaRequest dto) {
         String email = normalizarEmail(dto.getEmail());
         if (pessoaRepository.existsByCpf(dto.getCpf())) {
             throw new BusinessException("CPF já cadastrado: " + dto.getCpf());
@@ -91,7 +90,7 @@ public class PessoaService {
         }
 
         Pessoa pessoa = Pessoa.builder()
-                .nome(dto.getNome().trim())
+                .nome(normalizarNome(dto.getNome()))
                 .cpf(dto.getCpf())
                 .email(email)
                 .telefone(normalizarTelefone(dto.getTelefone()))
@@ -103,23 +102,23 @@ public class PessoaService {
                 .build();
 
         if (dto.getTipoAcessoId() != null) {
-            TipoAcesso tipo = tipoAcessoRepository.findById(dto.getTipoAcessoId())
-                    .orElseThrow(() -> new ResourceNotFoundException(
-                            "Tipo de acesso não encontrado: " + dto.getTipoAcessoId()));
-            pessoa.setTipoAcesso(tipo);
+            pessoa.setTipoAcesso(buscarTipoAtivo(dto.getTipoAcessoId()));
         }
 
         if (dto.getTipoAcessoId() == null) {
             TipoAcesso visitante = tipoAcessoRepository.findByNomeIgnoreCase("Visitante")
                     .orElseThrow(() -> new BusinessException("Tipo de acesso padrão não configurado."));
+            if (!visitante.isAtivo()) {
+                throw new BusinessException("O tipo de acesso padrão Visitante está inativo.");
+            }
             pessoa.setTipoAcesso(visitante);
         }
 
-        return pessoaRepository.save(pessoa);
+        return PessoaResponse.de(pessoaRepository.save(pessoa));
     }
 
     @Transactional
-    public Pessoa atualizar(Long id, PessoaRequest dto) {
+    public PessoaResponse atualizar(Long id, PessoaRequest dto) {
         Pessoa pessoa = buscarEntidadePorId(id);
         String email = normalizarEmail(dto.getEmail());
 
@@ -144,7 +143,7 @@ public class PessoaService {
                     }
                 });
 
-        pessoa.setNome(dto.getNome().trim());
+        pessoa.setNome(normalizarNome(dto.getNome()));
         pessoa.setCpf(dto.getCpf());
         pessoa.setEmail(email);
         pessoa.setTelefone(normalizarTelefone(dto.getTelefone()));
@@ -159,13 +158,10 @@ public class PessoaService {
         });
 
         if (dto.getTipoAcessoId() != null) {
-            TipoAcesso tipo = tipoAcessoRepository.findById(dto.getTipoAcessoId())
-                    .orElseThrow(() -> new ResourceNotFoundException(
-                            "Tipo de acesso não encontrado: " + dto.getTipoAcessoId()));
-            pessoa.setTipoAcesso(tipo);
+            pessoa.setTipoAcesso(buscarTipoAtivo(dto.getTipoAcessoId()));
         }
 
-        return pessoaRepository.save(pessoa);
+        return PessoaResponse.de(pessoaRepository.save(pessoa));
     }
 
     @Transactional
@@ -231,6 +227,14 @@ public class PessoaService {
         return email.trim().toLowerCase(Locale.ROOT);
     }
 
+    private String normalizarNome(String nome) {
+        String valor = nome == null ? "" : nome.trim();
+        if (valor.length() < 2) {
+            throw new BusinessException("Nome deve ter pelo menos 2 caracteres.");
+        }
+        return valor;
+    }
+
     private String normalizarEstado(String estado) {
         String valor = normalizarOpcional(estado);
         return valor == null ? null : valor.toUpperCase(Locale.ROOT);
@@ -238,6 +242,16 @@ public class PessoaService {
 
     private String normalizarOpcional(String valor) {
         return valor == null || valor.isBlank() ? null : valor.trim();
+    }
+
+    private TipoAcesso buscarTipoAtivo(Long id) {
+        TipoAcesso tipo = tipoAcessoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Tipo de acesso não encontrado: " + id));
+        if (!tipo.isAtivo()) {
+            throw new BusinessException("Não é possível vincular uma pessoa a um tipo de acesso inativo.");
+        }
+        return tipo;
     }
 
     private void validarNaoEhProprioCadastro(Long pessoaId, Long usuarioAtualId, String mensagem) {

@@ -1,6 +1,7 @@
 package com.empresa.cadrastro_pessoas.pessoa.repository;
 
 import com.empresa.cadrastro_pessoas.pessoa.model.Pessoa;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,6 +13,11 @@ import java.util.Optional;
 @Repository
 public interface PessoaRepository extends JpaRepository<Pessoa, Long> {
 
+        @Override
+        @EntityGraph(attributePaths = "tipoAcesso")
+        Optional<Pessoa> findById(Long id);
+
+        @EntityGraph(attributePaths = "tipoAcesso")
         Optional<Pessoa> findByCpf(String cpf);
 
         Optional<Pessoa> findByEmail(String email);
@@ -24,10 +30,15 @@ public interface PessoaRepository extends JpaRepository<Pessoa, Long> {
 
         boolean existsByEmailIgnoreCase(String email);
 
+        @EntityGraph(attributePaths = "tipoAcesso")
+        List<Pessoa> findAllByOrderByNomeAsc();
+
+        @EntityGraph(attributePaths = "tipoAcesso")
         List<Pessoa> findByAtivoTrueOrderByNomeAsc();
 
         List<Pessoa> findByTipoAcessoIsNull();
 
+        @EntityGraph(attributePaths = "tipoAcesso")
         List<Pessoa> findByNomeContainingIgnoreCaseOrderByNomeAsc(String nome);
 
         List<Pessoa> findByCidadeIgnoreCase(String cidade);

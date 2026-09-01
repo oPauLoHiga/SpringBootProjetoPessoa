@@ -5,6 +5,8 @@ import com.empresa.cadrastro_pessoas.pessoa.dto.PessoaRequest;
 import com.empresa.cadrastro_pessoas.pessoa.model.Pessoa;
 import com.empresa.cadrastro_pessoas.pessoa.repository.PessoaRepository;
 import com.empresa.cadrastro_pessoas.sugestao.repository.SugestaoRepository;
+import com.empresa.cadrastro_pessoas.shared.exception.BusinessException;
+import com.empresa.cadrastro_pessoas.tipoacesso.TipoAcesso;
 import com.empresa.cadrastro_pessoas.tipoacesso.repository.TipoAcessoRepository;
 import com.empresa.cadrastro_pessoas.usuario.repository.UsuarioRepository;
 import com.empresa.cadrastro_pessoas.usuario.model.Usuario;
@@ -42,10 +44,46 @@ class PessoaServiceTest {
 
     @Test
     void deveRetornarListaVaziaQuandoNaoExistiremPessoas() {
-        when(pessoaRepository.findAll(any(org.springframework.data.domain.Sort.class)))
-                .thenReturn(List.of());
+        when(pessoaRepository.findAllByOrderByNomeAsc()).thenReturn(List.of());
 
         assertThat(pessoaService.listarTodas()).isEmpty();
+    }
+
+    @Test
+    void naoDeveCadastrarNomeCurtoDisfarcadoComEspacos() {
+        PessoaRequest request = PessoaRequest.builder()
+                .nome(" A ")
+                .cpf("123.456.789-00")
+                .email("pessoa@exemplo.com")
+                .dataNascimento(LocalDate.of(1990, 1, 1))
+                .build();
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> pessoaService.cadastrar(request))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Nome deve ter pelo menos 2 caracteres.");
+
+        verify(pessoaRepository, never()).save(any());
+    }
+
+    @Test
+    void naoDeveCadastrarPessoaComTipoDeAcessoInativo() {
+        PessoaRequest request = PessoaRequest.builder()
+                .nome("Maria")
+                .cpf("123.456.789-00")
+                .email("pessoa@exemplo.com")
+                .dataNascimento(LocalDate.of(1990, 1, 1))
+                .tipoAcessoId(2L)
+                .build();
+        TipoAcesso tipoInativo = new TipoAcesso("Temporário", null);
+        tipoInativo.setId(2L);
+        tipoInativo.setAtivo(false);
+        when(tipoAcessoRepository.findById(2L)).thenReturn(Optional.of(tipoInativo));
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> pessoaService.cadastrar(request))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Não é possível vincular uma pessoa a um tipo de acesso inativo.");
+
+        verify(pessoaRepository, never()).save(any());
     }
 
     @Test
@@ -103,6 +141,7 @@ class PessoaServiceTest {
         when(pessoaRepository.findByEmailIgnoreCase("novo@exemplo.com")).thenReturn(Optional.empty());
         when(usuarioRepository.findByEmailIgnoreCase("novo@exemplo.com")).thenReturn(Optional.empty());
         when(usuarioRepository.findByPessoaId(1L)).thenReturn(Optional.of(usuario));
+        when(pessoaRepository.save(pessoa)).thenReturn(pessoa);
 
         pessoaService.atualizar(1L, request);
 

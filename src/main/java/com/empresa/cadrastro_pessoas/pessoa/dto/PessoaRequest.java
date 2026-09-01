@@ -43,5 +43,6 @@ public class PessoaRequest {
     @Pattern(regexp = "^$|[A-Za-z]{2}", message = "Estado deve conter uma sigla de 2 letras")
     private String estado;
 
+    @Positive(message = "ID do tipo de acesso deve ser positivo")
     private Long tipoAcessoId;
 }

@@ -29,6 +29,7 @@ public class CadastroVisitanteRequest {
     @Size(max = 150, message = "E-mail deve ter no máximo 150 caracteres")
     private String email;
 
+    @Size(max = 20, message = "Telefone deve ter no máximo 20 caracteres")
     private String telefone;
 
     @NotNull(message = "Data de nascimento é obrigatória")
@@ -49,6 +50,6 @@ public class CadastroVisitanteRequest {
     private String senha;
 
     @NotBlank(message = "Confirmação de senha é obrigatória")
-    @Size(max = 72, message = "Confirmação de senha deve ter no máximo 72 caracteres")
+    @Size(min = 8, max = 72, message = "Confirmação de senha deve ter entre 8 e 72 caracteres")
     private String confirmacaoSenha;
 }

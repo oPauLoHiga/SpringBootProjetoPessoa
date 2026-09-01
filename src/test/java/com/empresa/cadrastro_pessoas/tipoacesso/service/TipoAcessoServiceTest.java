@@ -77,4 +77,16 @@ class TipoAcessoServiceTest {
         assertThat(resposta.getNome()).isEqualTo("Premium");
         assertThat(resposta.getDescricao()).isEqualTo("Acesso ampliado");
     }
+
+    @Test
+    void naoDeveCriarNomeCurtoDisfarcadoComEspacos() {
+        TipoAcessoRepository repository = mock(TipoAcessoRepository.class);
+        TipoAcessoService service = new TipoAcessoService(repository);
+        TipoAcessoRequest request = new TipoAcessoRequest();
+        request.setNome(" A ");
+
+        assertThatThrownBy(() -> service.criar(request))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Nome deve ter pelo menos 2 caracteres.");
+    }
 }

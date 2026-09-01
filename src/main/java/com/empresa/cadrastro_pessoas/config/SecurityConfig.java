@@ -75,6 +75,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/pessoas/**").hasAnyRole("ADMIN", "OPERADOR")
                         .requestMatchers(HttpMethod.DELETE, "/api/sugestoes/**").hasRole("ADMIN")
                         .requestMatchers("/api/sugestoes/**").hasAnyRole("ADMIN", "OPERADOR")
+                        .requestMatchers(HttpMethod.GET, "/api/tipos-acesso/ativos").hasAnyRole("ADMIN", "OPERADOR")
                         .requestMatchers("/api/tipos-acesso/**").hasRole("ADMIN")
                         .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
                         .requestMatchers("/api/auth/me", "/api/auth/logout").authenticated()

@@ -64,9 +64,12 @@ public class SugestaoService {
             throw new BusinessException("Não é possível criar sugestão para uma pessoa inativa.");
         }
 
+        String tituloNormalizado = normalizarTexto(titulo, 5, 100, "Título");
+        String descricaoNormalizada = normalizarTexto(descricao, 10, 1000, "Descrição");
+
         Sugestao sugestao = new Sugestao();
-        sugestao.setTitulo(titulo.trim());
-        sugestao.setDescricao(descricao.trim());
+        sugestao.setTitulo(tituloNormalizado);
+        sugestao.setDescricao(descricaoNormalizada);
         sugestao.setPessoa(pessoa);
         // status inicia como PENDENTE (definido como default na entidade)
 
@@ -87,5 +90,13 @@ public class SugestaoService {
             throw new ResourceNotFoundException("Sugestão não encontrada: " + id);
         }
         sugestaoRepository.deleteById(id);
+    }
+
+    private String normalizarTexto(String texto, int minimo, int maximo, String campo) {
+        String valor = texto == null ? "" : texto.trim();
+        if (valor.length() < minimo || valor.length() > maximo) {
+            throw new BusinessException(campo + " deve ter entre " + minimo + " e " + maximo + " caracteres.");
+        }
+        return valor;
     }
 }

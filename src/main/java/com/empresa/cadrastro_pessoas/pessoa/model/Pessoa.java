@@ -8,15 +8,17 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "pessoas")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -82,7 +84,4 @@ public class Pessoa {
     @JoinColumn(name = "tipo_acesso_id")
     private TipoAcesso tipoAcesso;
 
-    // Getter e Setter correspondentes:
-    public TipoAcesso getTipoAcesso() { return tipoAcesso; }
-    public void setTipoAcesso(TipoAcesso tipoAcesso) { this.tipoAcesso = tipoAcesso; }
 }

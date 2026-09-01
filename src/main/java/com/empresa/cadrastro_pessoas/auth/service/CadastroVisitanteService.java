@@ -43,7 +43,7 @@ public class CadastroVisitanteService {
                 .orElseThrow(() -> new BusinessException("Tipo de acesso padrão não configurado."));
 
         Pessoa pessoa = Pessoa.builder()
-                .nome(request.getNome().trim())
+                .nome(normalizarNome(request.getNome()))
                 .cpf(request.getCpf())
                 .email(email)
                 .telefone(normalizarTelefone(request.getTelefone()))
@@ -82,6 +82,14 @@ public class CadastroVisitanteService {
 
     private String normalizarEmail(String email) {
         return email.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String normalizarNome(String nome) {
+        String valor = nome == null ? "" : nome.trim();
+        if (valor.length() < 2) {
+            throw new BusinessException("Nome deve ter pelo menos 2 caracteres.");
+        }
+        return valor;
     }
 
     private String normalizarTelefone(String telefone) {

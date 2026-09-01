@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -24,6 +25,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -56,6 +58,18 @@ class SegurancaIntegracaoTest {
     }
 
     @Test
+    void devePermitirOsDoisEnderecosLocaisDoFrontend() throws Exception {
+        for (String origem : new String[]{"http://localhost:5173", "http://127.0.0.1:5173"}) {
+            mockMvc.perform(options("/api/pessoas")
+                            .header(HttpHeaders.ORIGIN, origem)
+                            .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET"))
+                    .andExpect(status().isOk())
+                    .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.header()
+                            .string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, origem));
+        }
+    }
+
+    @Test
     void deveRestringirPessoasConformeOPerfil() throws Exception {
         mockMvc.perform(get("/api/pessoas")
                         .with(user("visitante@teste.com").roles("VISITANTE")))
@@ -73,6 +87,10 @@ class SegurancaIntegracaoTest {
         mockMvc.perform(get("/api/tipos-acesso")
                         .with(user("operador@teste.com").roles("OPERADOR")))
                 .andExpect(status().isForbidden());
+
+        mockMvc.perform(get("/api/tipos-acesso/ativos")
+                        .with(user("operador@teste.com").roles("OPERADOR")))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -114,6 +132,29 @@ class SegurancaIntegracaoTest {
         assertThat(usuario.getPessoa()).isNotNull();
         assertThat(usuario.getSenhaHash()).isNotEqualTo("SenhaSegura123");
         assertThat(passwordEncoder.matches("SenhaSegura123", usuario.getSenhaHash())).isTrue();
+    }
+
+    @Test
+    void cadastroPublicoNaoDeveAceitarNomeCurtoDisfarcadoComEspacos() throws Exception {
+        String json = """
+                {
+                  "nome": " A ",
+                  "cpf": "555.666.777-88",
+                  "email": "nome.curto@exemplo.com",
+                  "dataNascimento": "1995-05-10",
+                  "senha": "SenhaSegura123",
+                  "confirmacaoSenha": "SenhaSegura123"
+                }
+                """;
+
+        mockMvc.perform(post("/api/auth/cadastro")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Nome deve ter pelo menos 2 caracteres."));
+
+        assertThat(usuarioRepository.findByEmailIgnoreCase("nome.curto@exemplo.com")).isEmpty();
     }
 
     @Test

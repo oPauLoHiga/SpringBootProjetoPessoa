@@ -5,20 +5,26 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.Arrays;
+
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    private final String origemFrontend;
+    private final String[] origensFrontend;
 
-    public WebConfig(@Value("${app.cors.allowed-origin}") String origemFrontend) {
-        this.origemFrontend = origemFrontend;
+    public WebConfig(@Value("${app.cors.allowed-origins}") String origensFrontend) {
+        this.origensFrontend = Arrays.stream(origensFrontend.split(","))
+                .map(String::trim)
+                .filter(origem -> !origem.isEmpty())
+                .distinct()
+                .toArray(String[]::new);
     }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOrigins(origemFrontend)
+                .allowedOrigins(origensFrontend)
                 .allowedMethods(
                         "GET",
                         "POST",

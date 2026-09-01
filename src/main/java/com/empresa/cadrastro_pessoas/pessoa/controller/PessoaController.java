@@ -3,11 +3,11 @@ package com.empresa.cadrastro_pessoas.pessoa.controller;
 import com.empresa.cadrastro_pessoas.pessoa.dto.PessoaExclusaoResponse;
 import com.empresa.cadrastro_pessoas.pessoa.dto.PessoaRequest;
 import com.empresa.cadrastro_pessoas.pessoa.dto.PessoaResponse;
-import com.empresa.cadrastro_pessoas.pessoa.model.Pessoa;
 import com.empresa.cadrastro_pessoas.pessoa.service.PessoaService;
 import com.empresa.cadrastro_pessoas.auth.security.UsuarioPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -48,33 +48,31 @@ public class PessoaController {
     }
 
     @PostMapping
-    public ResponseEntity<String> cadastrar(
+    public ResponseEntity<PessoaResponse> cadastrar(
             @Valid @RequestBody PessoaRequest dto) {
-        Pessoa pessoaSalva = pessoaService.cadastrar(dto);
-        return ResponseEntity.ok(pessoaSalva.getNome() + " cadastrado(a) com sucesso!");
+        return ResponseEntity.status(HttpStatus.CREATED).body(pessoaService.cadastrar(dto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<String> atualizar(
+    public ResponseEntity<PessoaResponse> atualizar(
             @PathVariable Long id,
             @Valid @RequestBody PessoaRequest dto) {
-        pessoaService.atualizar(id, dto);
-        return modificar(id);
+        return ResponseEntity.ok(pessoaService.atualizar(id, dto));
     }
 
     @PatchMapping("/{id}/desativar")
-    public ResponseEntity<String> desativar(
+    public ResponseEntity<Void> desativar(
             @PathVariable Long id,
             @AuthenticationPrincipal UsuarioPrincipal usuarioAtual
     ) {
         pessoaService.desativar(id, usuarioAtual.id());
-        return modificar(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/ativar")
-    public ResponseEntity<String> ativar(@PathVariable Long id) {
+    public ResponseEntity<Void> ativar(@PathVariable Long id) {
         pessoaService.ativar(id);
-        return modificar(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}/resumo-exclusao")
@@ -91,8 +89,4 @@ public class PessoaController {
         return ResponseEntity.ok(pessoaService.excluir(id, usuarioAtual.id()));
     }
 
-    private ResponseEntity<String> modificar(Long id) {
-        PessoaResponse pessoa = pessoaService.buscarPorId(id);
-        return ResponseEntity.ok(pessoa.getNome() + " modificado(a) com sucesso!");
-    }
 }
