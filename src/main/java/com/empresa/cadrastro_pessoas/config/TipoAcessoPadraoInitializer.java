@@ -20,9 +20,14 @@ public class TipoAcessoPadraoInitializer implements CommandLineRunner {
     public void run(String... args) {
         TipoAcesso visitante = tipoAcessoRepository.findByNomeIgnoreCase("Visitante")
                 .orElseGet(() -> tipoAcessoRepository.save(
-                        new TipoAcesso("Visitante", "Acesso padrão com permissões limitadas.")));
+                        new TipoAcesso("Visitante", "Categoria padrão dos cadastros públicos.")));
 
+        visitante.setNome("VISITANTE");
+        if (visitante.getDescricao() == null || visitante.getDescricao().isBlank()) {
+            visitante.setDescricao("Categoria padrão dos cadastros públicos.");
+        }
         visitante.setAtivo(true);
+
         for (Pessoa pessoa : pessoaRepository.findByTipoAcessoIsNull()) {
             pessoa.setTipoAcesso(visitante);
         }

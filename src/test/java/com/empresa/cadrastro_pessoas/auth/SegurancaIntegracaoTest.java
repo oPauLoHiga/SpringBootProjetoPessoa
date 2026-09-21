@@ -135,6 +135,45 @@ class SegurancaIntegracaoTest {
     }
 
     @Test
+    void administradorDeveCriarAcessoParaPessoaExistente() throws Exception {
+        Pessoa pessoa = salvarPessoa(
+                "Pessoa Sem Acesso",
+                "444.555.666-77",
+                "pessoa.sem.acesso@exemplo.com"
+        );
+
+        mockMvc.perform(post("/api/usuarios/pessoas/{pessoaId}/acesso", pessoa.getId())
+                        .with(user("admin@teste.com").roles("ADMIN"))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "senha": "SenhaSegura123",
+                                  "confirmacaoSenha": "SenhaSegura123"
+                                }
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.perfil").value("VISITANTE"))
+                .andExpect(jsonPath("$.pessoaId").value(pessoa.getId()))
+                .andExpect(jsonPath("$.email").value(pessoa.getEmail()));
+
+        Usuario usuario = usuarioRepository.findByPessoaId(pessoa.getId()).orElseThrow();
+        assertThat(passwordEncoder.matches("SenhaSegura123", usuario.getSenhaHash())).isTrue();
+
+        mockMvc.perform(post("/api/usuarios/pessoas/{pessoaId}/acesso", pessoa.getId())
+                        .with(user("operador@teste.com").roles("OPERADOR"))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "senha": "OutraSenha123",
+                                  "confirmacaoSenha": "OutraSenha123"
+                                }
+                                """))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void cadastroPublicoNaoDeveAceitarNomeCurtoDisfarcadoComEspacos() throws Exception {
         String json = """
                 {

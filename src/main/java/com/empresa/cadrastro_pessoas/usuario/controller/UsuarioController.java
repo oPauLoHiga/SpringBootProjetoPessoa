@@ -2,6 +2,7 @@ package com.empresa.cadrastro_pessoas.usuario.controller;
 
 import com.empresa.cadrastro_pessoas.auth.security.UsuarioPrincipal;
 import com.empresa.cadrastro_pessoas.usuario.dto.AlterarPerfilRequest;
+import com.empresa.cadrastro_pessoas.usuario.dto.CriarAcessoPessoaRequest;
 import com.empresa.cadrastro_pessoas.usuario.dto.CriarUsuarioRequest;
 import com.empresa.cadrastro_pessoas.usuario.dto.RedefinirSenhaRequest;
 import com.empresa.cadrastro_pessoas.usuario.dto.UsuarioResponse;
@@ -38,6 +39,15 @@ public class UsuarioController {
     @ResponseStatus(HttpStatus.CREATED)
     public UsuarioResponse criar(@Valid @RequestBody CriarUsuarioRequest request) {
         return usuarioService.criarContaEquipe(request);
+    }
+
+    @PostMapping("/pessoas/{pessoaId}/acesso")
+    @ResponseStatus(HttpStatus.CREATED)
+    public UsuarioResponse criarAcessoParaPessoa(
+            @PathVariable Long pessoaId,
+            @Valid @RequestBody CriarAcessoPessoaRequest request
+    ) {
+        return usuarioService.criarAcessoParaPessoa(pessoaId, request);
     }
 
     @PatchMapping("/{id}/perfil")

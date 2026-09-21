@@ -17,6 +17,7 @@ API REST desenvolvida com Spring Boot para gerenciar pessoas, sugestões e conta
 - Perfis `ADMIN`, `OPERADOR` e `VISITANTE` verificados no backend.
 - Proteção CSRF para todas as operações de alteração.
 - Administração de contas, perfis, status e redefinição de senha.
+- Criação de acesso para pessoas que já estavam cadastradas antes da autenticação.
 - Criação opcional do primeiro administrador por variáveis de ambiente.
 
 ### Pessoas
@@ -29,13 +30,16 @@ API REST desenvolvida com Spring Boot para gerenciar pessoas, sugestões e conta
 - Impedir CPF e e-mail duplicados.
 - Validar campos obrigatórios, formato do CPF, e-mail e data de nascimento.
 
-### Tipos de acesso
+### Categorias de cadastro
 
-- Cadastrar e atualizar tipos de acesso.
+- Cadastrar e atualizar categorias usadas para organizar pessoas.
 - Listar todos ou apenas os ativos.
 - Consultar por ID.
 - Desativar e excluir.
 - Informar a quantidade de pessoas associadas a cada tipo.
+
+As categorias não concedem permissões. As permissões são controladas exclusivamente
+pelo perfil `ADMIN`, `OPERADOR` ou `VISITANTE` da conta de usuário.
 
 ## Tecnologias
 
@@ -183,6 +187,7 @@ http://localhost:8080
 | `GET` | `/api/minha-conta/sugestoes` | Visitante |
 | `POST` | `/api/minha-conta/sugestoes` | Visitante |
 | `GET/POST/PATCH/PUT` | `/api/usuarios/**` | Administrador |
+| `POST` | `/api/usuarios/pessoas/{pessoaId}/acesso` | Administrador; cria acesso de visitante para uma pessoa existente |
 
 ## Endpoints de pessoas
 
@@ -252,8 +257,8 @@ Content-Type: application/json
 
 ```json
 {
-  "nome": "ADMIN",
-  "descricao": "Acesso administrativo ao sistema"
+  "nome": "Cliente Premium",
+  "descricao": "Categoria usada para organizar clientes premium"
 }
 ```
 
@@ -262,10 +267,11 @@ Exemplo de resposta:
 ```json
 {
   "id": 1,
-  "nome": "ADMIN",
-  "descricao": "Acesso administrativo ao sistema",
+  "nome": "Cliente Premium",
+  "descricao": "Categoria usada para organizar clientes premium",
   "ativo": true,
-  "totalPessoas": 0
+  "totalPessoas": 0,
+  "perfil": null
 }
 ```
 

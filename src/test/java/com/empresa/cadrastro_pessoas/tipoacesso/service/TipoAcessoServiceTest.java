@@ -7,6 +7,7 @@ import com.empresa.cadrastro_pessoas.tipoacesso.dto.TipoAcessoRequest;
 import com.empresa.cadrastro_pessoas.tipoacesso.repository.TipoAcessoRepository;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -37,10 +38,46 @@ class TipoAcessoServiceTest {
 
         assertThatThrownBy(() -> service.desativar(1L))
                 .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("não pode ser desativado");
+                .hasMessageContaining("não pode ser desativada");
         assertThatThrownBy(() -> service.excluir(1L))
                 .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("não pode ser excluído");
+                .hasMessageContaining("não pode ser excluída");
+    }
+
+    @Test
+    void naoDeveCriarCategoriaComNomeReservadoParaPerfil() {
+        TipoAcessoRepository repository = mock(TipoAcessoRepository.class);
+        TipoAcessoService service = new TipoAcessoService(repository);
+        TipoAcessoRequest request = new TipoAcessoRequest();
+        request.setNome(" operador ");
+
+        assertThatThrownBy(() -> service.criar(request))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("nomes reservados");
+    }
+
+    @Test
+    void deveOcultarPerfisPrivilegiadosDoFormularioDePessoas() {
+        TipoAcessoRepository repository = mock(TipoAcessoRepository.class);
+        TipoAcessoService service = new TipoAcessoService(repository);
+        when(repository.listarAtivosComTotalPessoas()).thenReturn(List.of(
+                new com.empresa.cadrastro_pessoas.tipoacesso.dto.TipoAcessoResponse(
+                        1L, "ADMIN", null, true, 0
+                ),
+                new com.empresa.cadrastro_pessoas.tipoacesso.dto.TipoAcessoResponse(
+                        2L, "OPERADOR", null, true, 0
+                ),
+                new com.empresa.cadrastro_pessoas.tipoacesso.dto.TipoAcessoResponse(
+                        3L, "VISITANTE", null, true, 10
+                ),
+                new com.empresa.cadrastro_pessoas.tipoacesso.dto.TipoAcessoResponse(
+                        4L, "Parceiro", null, true, 2
+                )
+        ));
+
+        assertThat(service.listarAtivos())
+                .extracting(com.empresa.cadrastro_pessoas.tipoacesso.dto.TipoAcessoResponse::getNome)
+                .containsExactly("VISITANTE", "Parceiro");
     }
 
     @Test

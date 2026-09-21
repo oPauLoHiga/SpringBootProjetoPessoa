@@ -6,14 +6,15 @@ import com.empresa.cadrastro_pessoas.tipoacesso.TipoAcesso;
 import com.empresa.cadrastro_pessoas.tipoacesso.dto.TipoAcessoRequest;
 import com.empresa.cadrastro_pessoas.tipoacesso.dto.TipoAcessoResponse;
 import com.empresa.cadrastro_pessoas.tipoacesso.repository.TipoAcessoRepository;
+import com.empresa.cadrastro_pessoas.usuario.Perfil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
 public class TipoAcessoService {
-
-    private static final String TIPO_PADRAO = "Visitante";
+    private static final String CATEGORIA_PADRAO = "VISITANTE";
 
     private final TipoAcessoRepository repository;
 
@@ -28,7 +29,10 @@ public class TipoAcessoService {
 
     @Transactional(readOnly = true)
     public List<TipoAcessoResponse> listarAtivos() {
-        return repository.listarAtivosComTotalPessoas();
+        return repository.listarAtivosComTotalPessoas()
+                .stream()
+                .filter(tipo -> tipo.getPerfil() == null || tipo.getPerfil() == Perfil.VISITANTE)
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -41,6 +45,9 @@ public class TipoAcessoService {
     @Transactional
     public TipoAcessoResponse criar(TipoAcessoRequest req) {
         String nome = normalizarNome(req.getNome());
+        if (ehNomeDePerfil(nome)) {
+            throw new BusinessException("ADMIN, OPERADOR e VISITANTE são nomes reservados para perfis do sistema.");
+        }
         if (repository.existsByNomeIgnoreCase(nome)) {
             throw new BusinessException("Já existe um tipo de acesso com o nome: " + nome);
         }
@@ -53,8 +60,11 @@ public class TipoAcessoService {
         TipoAcesso tipo = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tipo de acesso não encontrado: " + id));
         String nome = normalizarNome(req.getNome());
-        if (ehTipoPadrao(tipo) && !TIPO_PADRAO.equalsIgnoreCase(nome)) {
-            throw new BusinessException("O tipo Visitante é obrigatório e não pode ser renomeado.");
+        if (ehCategoriaPadrao(tipo) && !tipo.getNome().equalsIgnoreCase(nome)) {
+            throw new BusinessException("A categoria VISITANTE é obrigatória e não pode ser renomeada.");
+        }
+        if (ehNomeDePerfil(nome) && !tipo.getNome().equalsIgnoreCase(nome)) {
+            throw new BusinessException("ADMIN, OPERADOR e VISITANTE são nomes reservados para perfis do sistema.");
         }
         repository.findByNomeIgnoreCase(nome).ifPresent(outro -> {
             if (!outro.getId().equals(id)) {
@@ -70,8 +80,8 @@ public class TipoAcessoService {
     public void desativar(Long id) {
         TipoAcesso tipo = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tipo de acesso não encontrado: " + id));
-        if (ehTipoPadrao(tipo)) {
-            throw new BusinessException("O tipo Visitante é obrigatório e não pode ser desativado.");
+        if (ehCategoriaPadrao(tipo)) {
+            throw new BusinessException("A categoria VISITANTE é obrigatória e não pode ser desativada.");
         }
         tipo.setAtivo(false);
         repository.save(tipo);
@@ -89,8 +99,8 @@ public class TipoAcessoService {
     public void excluir(Long id) {
         TipoAcesso tipo = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tipo de acesso não encontrado: " + id));
-        if (ehTipoPadrao(tipo)) {
-            throw new BusinessException("O tipo Visitante é obrigatório e não pode ser excluído.");
+        if (ehCategoriaPadrao(tipo)) {
+            throw new BusinessException("A categoria VISITANTE é obrigatória e não pode ser excluída.");
         }
         if (tipo.getPessoas() != null && !tipo.getPessoas().isEmpty()) {
             throw new BusinessException("Não é possível excluir um tipo vinculado a pessoas.");
@@ -98,8 +108,13 @@ public class TipoAcessoService {
         repository.delete(tipo);
     }
 
-    private boolean ehTipoPadrao(TipoAcesso tipo) {
-        return TIPO_PADRAO.equalsIgnoreCase(tipo.getNome());
+    private boolean ehNomeDePerfil(String nome) {
+        return Arrays.stream(Perfil.values())
+                .anyMatch(perfil -> perfil.name().equalsIgnoreCase(nome));
+    }
+
+    private boolean ehCategoriaPadrao(TipoAcesso tipo) {
+        return CATEGORIA_PADRAO.equalsIgnoreCase(tipo.getNome());
     }
 
     private String normalizarOpcional(String valor) {

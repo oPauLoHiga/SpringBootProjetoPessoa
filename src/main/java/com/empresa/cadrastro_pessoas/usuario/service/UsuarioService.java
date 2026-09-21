@@ -1,10 +1,12 @@
 package com.empresa.cadrastro_pessoas.usuario.service;
 
+import com.empresa.cadrastro_pessoas.pessoa.model.Pessoa;
 import com.empresa.cadrastro_pessoas.pessoa.repository.PessoaRepository;
 import com.empresa.cadrastro_pessoas.shared.exception.BusinessException;
 import com.empresa.cadrastro_pessoas.shared.exception.ResourceNotFoundException;
 import com.empresa.cadrastro_pessoas.usuario.Perfil;
 import com.empresa.cadrastro_pessoas.usuario.dto.AlterarPerfilRequest;
+import com.empresa.cadrastro_pessoas.usuario.dto.CriarAcessoPessoaRequest;
 import com.empresa.cadrastro_pessoas.usuario.dto.CriarUsuarioRequest;
 import com.empresa.cadrastro_pessoas.usuario.dto.RedefinirSenhaRequest;
 import com.empresa.cadrastro_pessoas.usuario.dto.UsuarioResponse;
@@ -53,6 +55,37 @@ public class UsuarioService {
                 .perfil(request.getPerfil())
                 .ativo(true)
                 .build();
+        return UsuarioResponse.de(usuarioRepository.save(usuario));
+    }
+
+    @Transactional
+    public UsuarioResponse criarAcessoParaPessoa(Long pessoaId, CriarAcessoPessoaRequest request) {
+        validarSenhas(request.senha(), request.confirmacaoSenha());
+
+        Pessoa pessoa = pessoaRepository.findById(pessoaId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Pessoa não encontrada com ID: " + pessoaId));
+
+        if (!Boolean.TRUE.equals(pessoa.getAtivo())) {
+            throw new BusinessException("Ative primeiro o cadastro da pessoa.");
+        }
+        if (usuarioRepository.existsByPessoaId(pessoaId)) {
+            throw new BusinessException("Esta pessoa já possui uma conta de acesso.");
+        }
+
+        String email = normalizarEmail(pessoa.getEmail());
+        if (usuarioRepository.existsByEmailIgnoreCase(email)) {
+            throw new BusinessException("O e-mail desta pessoa já pertence a outra conta de acesso.");
+        }
+
+        Usuario usuario = Usuario.builder()
+                .email(email)
+                .senhaHash(passwordEncoder.encode(request.senha()))
+                .perfil(Perfil.VISITANTE)
+                .ativo(true)
+                .pessoa(pessoa)
+                .build();
+
         return UsuarioResponse.de(usuarioRepository.save(usuario));
     }
 

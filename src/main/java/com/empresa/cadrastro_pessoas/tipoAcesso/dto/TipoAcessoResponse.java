@@ -1,7 +1,10 @@
 package com.empresa.cadrastro_pessoas.tipoacesso.dto;
 
 import com.empresa.cadrastro_pessoas.tipoacesso.TipoAcesso;
+import com.empresa.cadrastro_pessoas.usuario.Perfil;
 import lombok.Getter;
+
+import java.util.Locale;
 
 @Getter
 public class TipoAcessoResponse {
@@ -11,6 +14,7 @@ public class TipoAcessoResponse {
     private String  descricao;
     private boolean ativo;
     private long    totalPessoas;
+    private Perfil  perfil;
 
     public TipoAcessoResponse(
             Long id,
@@ -24,6 +28,7 @@ public class TipoAcessoResponse {
         this.descricao = descricao;
         this.ativo = ativo;
         this.totalPessoas = totalPessoas;
+        this.perfil = identificarPerfil(nome);
     }
 
     private TipoAcessoResponse() {
@@ -36,7 +41,19 @@ public class TipoAcessoResponse {
         r.descricao    = t.getDescricao();
         r.ativo        = t.isAtivo();
         r.totalPessoas = t.getPessoas() != null ? t.getPessoas().size() : 0;
+        r.perfil       = identificarPerfil(t.getNome());
         return r;
+    }
+
+    private static Perfil identificarPerfil(String nome) {
+        if (nome == null) {
+            return null;
+        }
+        try {
+            return Perfil.valueOf(nome.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException exception) {
+            return null;
+        }
     }
 
 }
